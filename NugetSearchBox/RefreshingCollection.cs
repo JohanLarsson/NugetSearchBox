@@ -22,6 +22,17 @@ namespace NugetSearchBox
 
         internal void RefreshWith(IEnumerable<T> newItems)
         {
+            this.AddNewItems(newItems);
+            this.RemoveOldItems(newItems);
+        }
+
+        internal void Clear()
+        {
+           this.inner.Clear();
+        }
+
+        private void AddNewItems(IEnumerable<T> newItems)
+        {
             this.set.Clear();
             this.set.UnionWith(newItems);
             this.set.ExceptWith(this.inner);
@@ -29,7 +40,10 @@ namespace NugetSearchBox
             {
                 this.inner.Add(item);
             }
+        }
 
+        private void RemoveOldItems(IEnumerable<T> newItems)
+        {
             this.set.Clear();
             this.set.UnionWith(this.inner);
             this.set.ExceptWith(newItems);
@@ -37,11 +51,6 @@ namespace NugetSearchBox
             {
                 this.inner.Remove(item);
             }
-        }
-
-        internal void Clear()
-        {
-           this.inner.Clear();
         }
     }
 }
