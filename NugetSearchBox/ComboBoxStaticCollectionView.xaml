@@ -20,12 +20,17 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Row="0"
-                           Grid.Column="0"
-                           Text="Bound to collection" />
+                   Grid.Column="0"
+                   Text="Bound to collection" />
         <ComboBox Grid.Row="0"
-                          Grid.Column="1"
-                          IsEditable="True"
-                          ItemsSource="{Binding Values}" />
+                  Grid.Column="1"
+                  IsEditable="True"
+                  IsTextSearchCaseSensitive="False"
+                  IsTextSearchEnabled="True"
+                  ItemsSource="{Binding Values}"
+                  SelectedItem="{Binding Text}"
+                  ShouldPreserveUserEnteredPrefix="True"
+                  StaysOpenOnEdit="True" />
     </Grid>
 </UserControl>
 

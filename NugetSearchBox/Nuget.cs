@@ -13,7 +13,7 @@
     {
         private static readonly string[] EmptyStrings = new string[0];
 
-        public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string text)
+        public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string text, int? take = null)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -22,7 +22,8 @@
 
             using (var client = new WebClient())
             {
-                var address = new Uri($@"https://api-v2v3search-0.nuget.org/autocomplete?q={HttpUtility.UrlEncode(text, Encoding.UTF8)}&take=5");
+                var takestring = take == null ? "" : $"&take = {take}";
+                var address = new Uri($@"https://api-v2v3search-0.nuget.org/autocomplete?q={HttpUtility.UrlEncode(text, Encoding.UTF8)}{takestring}");
                 var result = await client.DownloadStringTaskAsync(address).ConfigureAwait(false);
                 // quick & dirty here
                 var start = result.IndexOf('[') + 1;
@@ -33,9 +34,10 @@
             }
         }
 
-        public static Task<IReadOnlyList<string>> GetResultsAsync(string text)
+        public static Task<IReadOnlyList<string>> GetResultsAsync(string text, int? take = null)
         {
-            return GetQueryResultsAsync($"q={text}&take=20");
+            var takestring = take == null ? "" : $"&take = {take}";
+            return GetQueryResultsAsync($"q={text}{takestring}");
         }
 
         public static async Task<IReadOnlyList<string>> GetQueryResultsAsync(string query)

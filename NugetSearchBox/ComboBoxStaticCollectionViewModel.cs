@@ -14,16 +14,23 @@ namespace NugetSearchBox
 
         public ComboBoxStaticCollectionViewModel()
         {
-            var matches = Regex.Matches(Lorem, "(?<word>)\\w+");
-            foreach (var match in matches.OfType<Match>())
-            {
-                this.Values.Add(match.Value);
-            }
+            //var matches = Regex.Matches(Lorem, "(?<word>)\\w+");
+            //foreach (var match in matches.OfType<Match>())
+            //{
+            //    this.Values.Add(match.Value);
+            //}
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<string> Values { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> Values { get; } = new ObservableCollection<string>
+        {
+            "EntityFramework",
+            "Gu.Units",
+            "Gu.Units",
+            "Gu.Units.Json",
+            "Gu.Localization",
+        };
 
         public string Text
         {

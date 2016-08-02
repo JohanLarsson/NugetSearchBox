@@ -2,11 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.ComponentModel;
-    using System.Linq;
     using System.Runtime.CompilerServices;
-    using System.Text.RegularExpressions;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
@@ -15,6 +12,8 @@
         private string searchText;
         private IEnumerable<string> nugetAutoComplete;
         private string text;
+        private int? autoCompleteCount = 5;
+        private int? resultCount;
 
         public NugetSearchViewModel()
         {
@@ -23,6 +22,17 @@
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public int? AutoCompleteCount
+        {
+            get { return this.autoCompleteCount; }
+            set
+            {
+                if (value == this.autoCompleteCount) return;
+                this.autoCompleteCount = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         public IEnumerable<string> NugetAutoComplete
         {
             get { return this.nugetAutoComplete; }
@@ -30,6 +40,17 @@
             {
                 if (Equals(value, this.nugetAutoComplete)) return;
                 this.nugetAutoComplete = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public int? ResultCount
+        {
+            get { return this.resultCount; }
+            set
+            {
+                if (value == this.resultCount) return;
+                this.resultCount = value;
                 this.OnPropertyChanged();
             }
         }
@@ -86,7 +107,7 @@
         {
             try
             {
-                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.SearchText).ConfigureAwait(false);
+                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.SearchText, this.AutoCompleteCount).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -98,7 +119,7 @@
         {
             try
             {
-                this.NugetResults = await Nuget.GetResultsAsync(this.SearchText).ConfigureAwait(false);
+                this.NugetResults = await Nuget.GetResultsAsync(this.SearchText, this.ResultCount).ConfigureAwait(false);
             }
             catch (Exception e)
             {
