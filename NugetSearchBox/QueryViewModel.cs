@@ -9,7 +9,7 @@ namespace NugetSearchBox
 
     public class QueryViewModel : INotifyPropertyChanged
     {
-        private IReadOnlyList<string> nugetResults;
+        private IReadOnlyList<PackageInfo> queryResults;
         private string query;
         private TimeSpan time;
         private Stopwatch stopwatch = Stopwatch.StartNew();
@@ -21,13 +21,13 @@ namespace NugetSearchBox
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public IReadOnlyList<string> NugetResults
+        public IReadOnlyList<PackageInfo> QueryResults
         {
-            get { return this.nugetResults; }
+            get { return this.queryResults; }
             private set
             {
-                if (Equals(value, this.nugetResults)) return;
-                this.nugetResults = value;
+                if (Equals(value, this.queryResults)) return;
+                this.queryResults = value;
                 this.OnPropertyChanged();
             }
         }
@@ -69,12 +69,12 @@ namespace NugetSearchBox
             try
             {
                 this.stopwatch.Restart();
-                this.NugetResults = await Nuget.GetQueryResultsAsync(this.Query).ConfigureAwait(false);
+                this.QueryResults = await Nuget.GetQueryResultsAsync(this.Query).ConfigureAwait(false);
                 this.Time = this.stopwatch.Elapsed;
             }
             catch (Exception e)
             {
-                this.NugetResults = new[] { e.Message };
+                //this.QueryResults = new[] { e.Message };
             }
         }
 

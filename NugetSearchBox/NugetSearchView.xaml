@@ -4,9 +4,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NugetSearchBox"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             d:DesignHeight="300"
-             d:DesignWidth="300"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="LabelStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </UserControl.Resources>
     <UserControl.DataContext>
         <local:NugetSearchViewModel />
     </UserControl.DataContext>
@@ -19,13 +23,14 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" MinWidth="200" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <TextBlock Grid.Row="0"
                    Grid.Column="0"
-                   Text="Nuget" />
+                   Style="{StaticResource LabelStyle}"
+                   Text="Search" />
         <ComboBox Grid.Row="0"
                   Grid.Column="1"
                   IsEditable="True"
@@ -39,6 +44,7 @@
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
+                   Style="{StaticResource LabelStyle}"
                    Text="Autocomplete: " />
         <TextBlock Grid.Row="1"
                    Grid.Column="1"
@@ -46,6 +52,7 @@
 
         <TextBlock Grid.Row="2"
                    Grid.Column="0"
+                   Style="{StaticResource LabelStyle}"
                    Text="Results: " />
         <TextBlock Grid.Row="2"
                    Grid.Column="1"
@@ -53,24 +60,34 @@
 
         <TextBlock Grid.Row="3"
                    Grid.Column="0"
+                   Style="{StaticResource LabelStyle}"
                    Text="Autocomplete results: " />
         <TextBlock Grid.Row="3"
                    Grid.Column="1"
                    Text="{Binding AutoCompleteResultsTime}" />
-        
-        <Grid Grid.Row="4" Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
 
-            <GroupBox Grid.Column="0" Header="Autocomplete">
-                <ItemsControl Foreground="LightBlue" ItemsSource="{Binding NugetAutoComplete}" />
-            </GroupBox>
 
-            <GroupBox Grid.Column="1" Header="Results">
-                <ListBox ItemsSource="{Binding NugetResults}" />
-            </GroupBox>
-        </Grid>
+
+        <GroupBox Grid.Row="4"
+                  Grid.Column="0"
+                  Header="Autocomplete">
+            <ItemsControl Foreground="LightBlue" ItemsSource="{Binding NugetAutoComplete}" />
+        </GroupBox>
+
+        <GroupBox Grid.Row="4"
+                  Grid.Column="1"
+                  Header="Results">
+            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:PackageInfo}">
+                        <TextBox BorderBrush="{x:Null}"
+                                 BorderThickness="0"
+                                 IsReadOnly="True"
+                                 Text="{Binding Title,
+                                                Mode=OneTime}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </GroupBox>
     </Grid>
 </UserControl>

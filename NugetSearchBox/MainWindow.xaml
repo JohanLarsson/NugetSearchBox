@@ -9,17 +9,17 @@
         Height="350"
         mc:Ignorable="d">
     <TabControl SelectedIndex="2">
-        <TabItem Header="Combobox nuget">
+        <TabItem Header="nuget">
             <local:NugetSearchView />
         </TabItem>
 
-        <TabItem Header="Combobox static collection">
+        <!--<TabItem Header="Combobox static collection">
             <local:ComboBoxStaticCollectionView />
         </TabItem>
 
         <TabItem Header="Nuget Query">
             <local:QueryView />
-        </TabItem>
+        </TabItem>-->
     </TabControl>
 </Window>
 

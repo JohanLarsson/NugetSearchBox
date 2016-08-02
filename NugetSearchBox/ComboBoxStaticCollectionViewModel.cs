@@ -2,9 +2,7 @@ namespace NugetSearchBox
 {
     using System.Collections.ObjectModel;
     using System.ComponentModel;
-    using System.Linq;
     using System.Runtime.CompilerServices;
-    using System.Text.RegularExpressions;
     using NugetSearchBox.Annotations;
 
     public class ComboBoxStaticCollectionViewModel

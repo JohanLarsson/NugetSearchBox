@@ -63,7 +63,7 @@
             }
         }
 
-        public ObservableCollection<string> NugetResults { get; } = new ObservableCollection<string>();
+        public ObservableCollection<PackageInfo> QueryResults { get; } = new ObservableCollection<PackageInfo>();
 
         public string SearchText
         {
@@ -127,7 +127,7 @@
             if (propertyName == nameof(this.SearchText))
             {
                 this.stopwatch.Restart();
-                this.NugetResults.Clear();
+                this.QueryResults.Clear();
                 if (string.IsNullOrEmpty(this.text))
                 {
                     this.UpdateAutoComplete();
@@ -156,7 +156,7 @@
                     }
                 }
 
-                this.AutoCompleteResultsTime = this.stopwatch.Elapsed;
+                this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
             }
             catch (Exception e)
             {
@@ -182,20 +182,20 @@
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    this.NugetResults.Clear();
-                    this.NugetResults.Add(e.Message);
+                    this.QueryResults.Clear();
+                    //this.QueryResults.Add(e.Message);
                 }));
             }
         }
 
-        private void UpdateResults(IEnumerable<string> results)
+        private void UpdateResults(IEnumerable<PackageInfo> results)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                var newresults = results.Except(this.NugetResults).ToArray();
+                var newresults = results.Except(this.QueryResults).ToArray();
                 foreach (var result in newresults)
                 {
-                    this.NugetResults.Add(result);
+                    this.QueryResults.Add(result);
                 }
             }));
         }

@@ -23,12 +23,12 @@
         <GroupBox Grid.Row="2">
             <GroupBox.Header>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding NugetResults.Count, StringFormat='Results: {0}'}" />
+                    <TextBlock Text="{Binding QueryResults.Count, StringFormat='Results: {0}'}" />
                     <TextBlock Text="{Binding Time, StringFormat=' took: {0}'}" />
                 </StackPanel>
             </GroupBox.Header>
             
-            <ListBox ItemsSource="{Binding NugetResults}" />
+            <ListBox ItemsSource="{Binding QueryResults}" />
         </GroupBox>
     </Grid>
 </UserControl>
