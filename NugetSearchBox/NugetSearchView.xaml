@@ -28,7 +28,7 @@
                   Grid.Column="1"
                   IsEditable="True"
                   IsTextSearchCaseSensitive="False"
-                  IsTextSearchEnabled="True"
+                  IsTextSearchEnabled="False"
                   ItemsSource="{Binding NugetAutoComplete}"
                   SelectedItem="{Binding Text}"
                   ShouldPreserveUserEnteredPrefix="True"
