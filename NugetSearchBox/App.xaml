@@ -2,20 +2,30 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:NugetSearchBox"
+             xmlns:system="clr-namespace:System;assembly=System"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <system:Uri x:Key="DefaultIcon">
+            pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon.png
+        </system:Uri>
+        <BitmapCache x:Key="BitmapCache" />
         <DataTemplate DataType="{x:Type local:PackageInfo}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Image Height="24"
+                <Image Width="24"
+                       Height="24"
                        Margin="2"
+                       CacheMode="{StaticResource BitmapCache}"
                        RenderOptions.BitmapScalingMode="HighQuality"
+                       RenderOptions.CachingHint="Cache"
                        Source="{Binding IconUrl,
-                                        Converter={local:UrlToImageConverter Default=Images/NugetIcon.png},
-                                        Mode=OneTime}" />
+                                        TargetNullValue={StaticResource DefaultIcon},
+                                        Mode=OneTime,
+                                        IsAsync=True}"
+                       Stretch="Uniform" />
                 <Grid Grid.Column="1" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

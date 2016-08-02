@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NugetSearchBox"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DesignWidth="600"
              mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="LabelStyle" TargetType="{x:Type TextBlock}">
@@ -74,7 +75,7 @@
 
         <TabControl Grid.Row="4" Grid.Column="1">
             <TabItem Header="Merged results">
-                <ListBox x:Name="MergedListBox" HorizontalContentAlignment="Stretch">
+                <ListBox HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsSource>
                         <MultiBinding Converter="{x:Static local:CompositeCollectionConverter.Default}">
                             <Binding Mode="OneTime" Path="QueryResults" />

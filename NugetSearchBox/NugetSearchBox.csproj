@@ -60,7 +60,6 @@
       <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\CompositeCollectionConverter.cs" />
-    <Compile Include="Converters\UrlToImageConverter.cs" />
     <Compile Include="Dtos\AutoCompleteResponse.cs" />
     <Compile Include="Dtos\PackageInfo.cs" />
     <Compile Include="Dtos\QueryResponse.cs" />
