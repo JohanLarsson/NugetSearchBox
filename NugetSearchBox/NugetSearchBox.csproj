@@ -49,9 +49,30 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ComboBoxStaticCollectionView.xaml.cs">
+      <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ComboBoxStaticCollectionViewModel.cs">
+      <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Nuget.cs" />
+    <Compile Include="NugetSearchView.xaml.cs">
+      <DependentUpon>NugetSearchView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="NugetSearchViewModel.cs">
+      <DependentUpon>NugetSearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="ViewModel.cs" />
+    <Compile Include="QueryView.xaml.cs">
+      <DependentUpon>QueryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="QueryViewModel.cs">
+      <DependentUpon>QueryView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="ComboBoxStaticCollectionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -64,6 +85,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NugetSearchView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="QueryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

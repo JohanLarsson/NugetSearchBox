@@ -11,11 +11,13 @@
 
     public static class Nuget
     {
-        public static async Task<IEnumerable<string>> GetAutoCompletesAsync(string text)
+        private static readonly string[] EmptyStrings = new string[0];
+
+        public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
-                return Enumerable.Empty<string>();
+                return EmptyStrings;
             }
 
             using (var client = new WebClient())
@@ -27,24 +29,29 @@
                 var end = result.LastIndexOf(']');
                 var slice = result.Slice(start, end);
                 var matches = Regex.Matches(slice, "\"(?<word>[^\"]+)\"");
-                return matches.OfType<Match>().Select(m => m.Groups["word"].Value);
+                return matches.OfType<Match>().Select(m => m.Groups["word"].Value).ToArray();
             }
         }
 
-        public static async Task<IEnumerable<string>> GetResultsAsync(string text)
+        public static Task<IReadOnlyList<string>> GetResultsAsync(string text)
+        {
+            return GetQueryResultsAsync($"q={text}&take=20");
+        }
+
+        public static async Task<IReadOnlyList<string>> GetQueryResultsAsync(string query)
         {
             using (var client = new WebClient())
             {
-                var address = string.IsNullOrEmpty(text) 
-                    ? new Uri($@"https://api-v2v3search-0.nuget.org/query?take=20")
-                    : new Uri($@"https://api-v2v3search-0.nuget.org/query?q={HttpUtility.UrlEncode(text, Encoding.UTF8)}&take=20");
+                var address = string.IsNullOrEmpty(query)
+                    ? new Uri($@"https://api-v2v3search-0.nuget.org/query?")
+                    : new Uri($@"https://api-v2v3search-0.nuget.org/query?{query}");
                 var result = await client.DownloadStringTaskAsync(address).ConfigureAwait(false);
                 // quick & dirty here
                 var start = result.IndexOf('[') + 1;
                 var end = result.LastIndexOf(']');
                 var slice = result.Slice(start, end);
                 var matches = Regex.Matches(slice, "\"title\":\"(?<word>[^\"]+)\"");
-                return matches.OfType<Match>().Select(m => m.Groups["word"].Value);
+                return matches.OfType<Match>().Select(m => m.Groups["word"].Value).ToArray();
             }
         }
 
