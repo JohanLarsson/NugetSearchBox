@@ -29,8 +29,11 @@
 
         public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string text, int? take = null)
         {
-            var takestring = take == null ? "" : $"&take = {take}";
-            return GetQueryResultsAsync($"q={text}{takestring}");
+            var takestring = take == null ? "" : $"take={take}";
+
+            return GetQueryResultsAsync(string.IsNullOrWhiteSpace(text) 
+                ? $"{takestring}" 
+                : $"q={text}&{takestring}");
         }
 
         public static async Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(string query)

@@ -75,7 +75,9 @@
 
         <TabControl Grid.Row="4" Grid.Column="1">
             <TabItem Header="Merged results">
-                <ListBox HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox HorizontalContentAlignment="Stretch"
+                         local:ScrollViewer.LastPage="OnCloseToBottom"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsSource>
                         <MultiBinding Converter="{x:Static local:CompositeCollectionConverter.Default}">
                             <Binding Mode="OneTime" Path="QueryResults" />
@@ -99,6 +101,5 @@
                 </ScrollViewer>
             </TabItem>
         </TabControl>
-
     </Grid>
 </UserControl>

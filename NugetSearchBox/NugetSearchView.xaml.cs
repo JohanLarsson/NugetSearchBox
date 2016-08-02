@@ -2,14 +2,17 @@
 
 namespace NugetSearchBox
 {
-    /// <summary>
-    /// Interaction logic for NugetSearchView.xaml
-    /// </summary>
+    using System.Windows;
+
     public partial class NugetSearchView : UserControl
     {
         public NugetSearchView()
         {
             this.InitializeComponent();
+        }
+
+        private void OnCloseToBottom(object sender, RoutedEventArgs e)
+        {
         }
     }
 }
