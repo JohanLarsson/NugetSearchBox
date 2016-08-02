@@ -9,6 +9,7 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Data;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
@@ -64,6 +65,8 @@
         }
 
         public ObservableCollection<PackageInfo> QueryResults { get; } = new ObservableCollection<PackageInfo>();
+
+        public ObservableCollection<PackageInfo> AutoCompleteResults { get; } = new ObservableCollection<PackageInfo>();
 
         public string SearchText
         {
@@ -142,6 +145,7 @@
             try
             {
                 var query = this.searchText;
+                this.AutoCompleteResults.Clear();
                 this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(query, this.AutoCompleteCount)
                     .ConfigureAwait(false);
                 this.AutoCompleteTime = this.stopwatch.Elapsed;
@@ -152,7 +156,14 @@
                     if (this.searchText == query)
                     {
                         var flattened = results.SelectMany(r => r).Distinct();
-                        this.UpdateResults(flattened);
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            var newresults = flattened.Except(this.QueryResults).ToArray();
+                            foreach (var result in newresults)
+                            {
+                                this.AutoCompleteResults.Add(result);
+                            }
+                        }));
                     }
                 }
 
@@ -173,7 +184,14 @@
                     .ConfigureAwait(false);
                 if (this.searchText == query)
                 {
-                    this.UpdateResults(results);
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        var newresults = results.Except(this.QueryResults).ToArray();
+                        foreach (var result in newresults)
+                        {
+                            this.QueryResults.Add(result);
+                        }
+                    }));
                 }
 
                 this.ResultsTime = this.stopwatch.Elapsed;
@@ -186,18 +204,6 @@
                     //this.QueryResults.Add(e.Message);
                 }));
             }
-        }
-
-        private void UpdateResults(IEnumerable<PackageInfo> results)
-        {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                var newresults = results.Except(this.QueryResults).ToArray();
-                foreach (var result in newresults)
-                {
-                    this.QueryResults.Add(result);
-                }
-            }));
         }
     }
 }

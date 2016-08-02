@@ -66,28 +66,66 @@
                    Grid.Column="1"
                    Text="{Binding AutoCompleteResultsTime}" />
 
-
-
         <GroupBox Grid.Row="4"
                   Grid.Column="0"
                   Header="Autocomplete">
             <ItemsControl Foreground="LightBlue" ItemsSource="{Binding NugetAutoComplete}" />
         </GroupBox>
 
-        <GroupBox Grid.Row="4"
-                  Grid.Column="1"
-                  Header="Results">
-            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type local:PackageInfo}">
-                        <TextBox BorderBrush="{x:Null}"
-                                 BorderThickness="0"
-                                 IsReadOnly="True"
-                                 Text="{Binding Title,
-                                                Mode=OneTime}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </GroupBox>
+        <TabControl Grid.Row="4" Grid.Column="1">
+            <TabItem Header="Merged results">
+                <ListBox x:Name="MergedListBox" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemsSource>
+                        <MultiBinding Converter="{x:Static local:CompositeCollectionConverter.Default}">
+                            <Binding Path="QueryResults" Mode="OneTime"/>
+                            <Binding Path="AutoCompleteResults" Mode="OneTime"/>
+                        </MultiBinding>
+                    </ListBox.ItemsSource>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:PackageInfo}">
+                            <TextBox BorderBrush="{x:Null}"
+                                     BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Text="{Binding Title,
+                                                    Mode=OneTime}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </TabItem>
+            <TabItem Header="Separate">
+                <ScrollViewer>
+                    <StackPanel>
+                        <GroupBox Header="Results">
+                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:PackageInfo}">
+                                        <TextBox BorderBrush="{x:Null}"
+                                                 BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding Title,
+                                                                Mode=OneTime}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </GroupBox>
+
+                        <GroupBox Header="AutoCompleteResults">
+                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding AutoCompleteResults}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:PackageInfo}">
+                                        <TextBox BorderBrush="{x:Null}"
+                                                 BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding Title,
+                                                                Mode=OneTime}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
     </Grid>
 </UserControl>
