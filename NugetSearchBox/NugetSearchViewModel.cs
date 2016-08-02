@@ -7,6 +7,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
     using System.Windows;
     using NugetSearchBox.Annotations;
 
@@ -146,11 +147,12 @@
                 this.AutoCompleteTime = this.stopwatch.Elapsed;
                 if (this.nugetAutoComplete.Any())
                 {
-                    var results = await Nuget.GetResultsAsync(string.Join(" ", this.nugetAutoComplete))
-                        .ConfigureAwait(false);
+                    var results = await Task.WhenAll(this.nugetAutoComplete.Select(a=> Nuget.GetResultsAsync(a)))
+                                            .ConfigureAwait(false);
                     if (this.searchText == query)
                     {
-                        this.UpdateResults(results);
+                        var flattened = results.SelectMany(r => r).Distinct();
+                        this.UpdateResults(flattened);
                     }
                 }
 
@@ -186,7 +188,7 @@
             }
         }
 
-        private void UpdateResults(IReadOnlyList<string> results)
+        private void UpdateResults(IEnumerable<string> results)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
