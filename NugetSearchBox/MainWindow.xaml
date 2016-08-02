@@ -54,13 +54,13 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <GroupBox Header="Autocomplete">
-                        <ItemsControl Grid.Column="0"
-                                      Foreground="LightBlue"
-                                      ItemsSource="{Binding NugetAutoComplete}" />
+                  
+                    <GroupBox Grid.Column="0" Header="Autocomplete">
+                        <ItemsControl Foreground="LightBlue" ItemsSource="{Binding NugetAutoComplete}" />
                     </GroupBox>
+                    
                     <GroupBox Grid.Column="1" Header="Results">
-                        <ItemsControl Foreground="GreenYellow" ItemsSource="{Binding NugetResults}" />
+                        <ListBox ItemsSource="{Binding NugetResults}" />
                     </GroupBox>
                 </Grid>
             </Grid>

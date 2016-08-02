@@ -1,5 +1,6 @@
 ﻿namespace NugetSearchBox
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
@@ -23,6 +24,8 @@
             {
                 this.Values.Add(match.Value);
             }
+
+            this.UpdateResults();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -77,13 +80,40 @@
         protected virtual async void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-            if (propertyName == nameof(this.Query) && 
-                string.IsNullOrEmpty(this.Text))
+            if (propertyName == nameof(this.Query))
             {
-                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.Query).ConfigureAwait(false);
-                this.NugetResults = await Nuget.GetResultsAsync(this.Query).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(this.text))
+                {
+                    this.UpdateAutoComplete();
+                }
+
+                this.UpdateResults();
             }
         }
+
+        private async void UpdateAutoComplete()
+        {
+            try
+            {
+                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.Query).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.NugetAutoComplete = new[] { e.Message };
+            }
+        }
+
+        private async void UpdateResults()
+        {
+            try
+            {
+                this.NugetResults = await Nuget.GetResultsAsync(this.Query).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.NugetResults = new[] { e.Message };
+            }
+        }
+
     }
 }
