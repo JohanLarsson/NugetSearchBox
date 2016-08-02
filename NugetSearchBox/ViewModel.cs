@@ -10,14 +10,15 @@
 
     public class ViewModel : INotifyPropertyChanged
     {
-        private IEnumerable<string> _nugetQuery;
-        private string _searchText;
-        private IEnumerable<string> _nugetAutoComplete;
-        private const string lorem = "Lorem ipsum dolor sit amet, falli solet invenire in eum, alia prima possit cum an. Ex nec numquam perpetua, nusquam constituto eos ut. In offendit percipitur his, soleat nostrud nec an. Et mei debitis legendos.\r\n\r\nNam ea dicit cetero, dolore volutpat mei eu. Ferri fuisset ei eos, sale democritum nam et, qui et assum audire. Amet stet mel et, ne nam esse fugit fuisset. Nostro fabulas urbanitas qui id, et sed commodo indoctum, vero nemore persius cu per.\r\n\r\nAd has amet copiosae dignissim. Te quidam essent nam, alterum voluptaria philosophia nec et. An eligendi consetetur his. Nisl purto oblique no pro. Id omittam lucilius qui.\r\n\r\nUt nec quot admodum inciderint. Ex apeirian comprehensam est, qui accumsan accusata contentiones cu, vel eu laudem minimum. Vix ocurreret maiestatis elaboraret no, at eam audire labitur saperet, vocent delenit eu his. Ad labores indoctum qui, no sit facer nominati inimicus, ea vide scribentur sea. Ipsum expetenda contentiones vel in, has ad tation imperdiet, mei in porro eripuit instructior. Mel ea nonumy mandamus.\r\n\r\nDelenit dolorum delicata cu sit, liber meliore maluisset per an. Ignota nusquam qualisque has ne, ad audire gloriatur duo, no mea fastidii adipisci. At has splendide vituperatoribus, nec aeterno epicuri ei. Animal phaedrum efficiendi in sed. Et mel duis convenire inciderint, appareat delicata expetenda eos ut.";
+        private IEnumerable<string> nugetResults;
+        private string query;
+        private IEnumerable<string> nugetAutoComplete;
+        private string text;
+        private const string Lorem = "Lorem ipsum dolor sit amet, falli solet invenire in eum, alia prima possit cum an. Ex nec numquam perpetua, nusquam constituto eos ut. In offendit percipitur his, soleat nostrud nec an. Et mei debitis legendos.\r\n\r\nNam ea dicit cetero, dolore volutpat mei eu. Ferri fuisset ei eos, sale democritum nam et, qui et assum audire. Amet stet mel et, ne nam esse fugit fuisset. Nostro fabulas urbanitas qui id, et sed commodo indoctum, vero nemore persius cu per.\r\n\r\nAd has amet copiosae dignissim. Te quidam essent nam, alterum voluptaria philosophia nec et. An eligendi consetetur his. Nisl purto oblique no pro. Id omittam lucilius qui.\r\n\r\nUt nec quot admodum inciderint. Ex apeirian comprehensam est, qui accumsan accusata contentiones cu, vel eu laudem minimum. Vix ocurreret maiestatis elaboraret no, at eam audire labitur saperet, vocent delenit eu his. Ad labores indoctum qui, no sit facer nominati inimicus, ea vide scribentur sea. Ipsum expetenda contentiones vel in, has ad tation imperdiet, mei in porro eripuit instructior. Mel ea nonumy mandamus.\r\n\r\nDelenit dolorum delicata cu sit, liber meliore maluisset per an. Ignota nusquam qualisque has ne, ad audire gloriatur duo, no mea fastidii adipisci. At has splendide vituperatoribus, nec aeterno epicuri ei. Animal phaedrum efficiendi in sed. Et mel duis convenire inciderint, appareat delicata expetenda eos ut.";
 
         public ViewModel()
         {
-            var matches = Regex.Matches(lorem, "(?<word>)\\w+");
+            var matches = Regex.Matches(Lorem, "(?<word>)\\w+");
             foreach (var match in matches.OfType<Match>())
             {
                 this.Values.Add(match.Value);
@@ -30,33 +31,44 @@
 
         public IEnumerable<string> NugetAutoComplete
         {
-            get { return this._nugetAutoComplete; }
+            get { return this.nugetAutoComplete; }
             private set
             {
-                if (Equals(value, this._nugetAutoComplete)) return;
-                this._nugetAutoComplete = value;
+                if (Equals(value, this.nugetAutoComplete)) return;
+                this.nugetAutoComplete = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public IEnumerable<string> NugetQuery
+        public IEnumerable<string> NugetResults
         {
-            get { return this._nugetQuery; }
+            get { return this.nugetResults; }
             private set
             {
-                if (Equals(value, this._nugetQuery)) return;
-                this._nugetQuery = value;
+                if (Equals(value, this.nugetResults)) return;
+                this.nugetResults = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public string SearchText
+        public string Query
         {
-            get { return this._searchText; }
+            get { return this.query; }
             set
             {
-                if (value == this._searchText) return;
-                this._searchText = value;
+                if (value == this.query) return;
+                this.query = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string Text
+        {
+            get { return this.text; }
+            set
+            {
+                if (value == this.text) return;
+                this.text = value;
                 this.OnPropertyChanged();
             }
         }
@@ -66,9 +78,11 @@
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-            if (propertyName == nameof(this.SearchText))
+            if (propertyName == nameof(this.Query) && 
+                string.IsNullOrEmpty(this.Text))
             {
-                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.SearchText).ConfigureAwait(false);
+                this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(this.Query).ConfigureAwait(false);
+                this.NugetResults = await Nuget.GetResultsAsync(this.Query).ConfigureAwait(false);
             }
         }
     }
