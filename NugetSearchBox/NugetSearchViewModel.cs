@@ -4,20 +4,23 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.Linq;
-    using System.Net.Mime;
     using System.Runtime.CompilerServices;
-    using System.Threading;
     using System.Windows;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
     {
+        private readonly Stopwatch stopwatch = new Stopwatch();
         private string searchText;
         private IEnumerable<string> nugetAutoComplete;
         private string text;
         private int? autoCompleteCount;
         private int? resultCount;
+        private TimeSpan autoCompleteTime;
+        private TimeSpan resultsTime;
+        private TimeSpan autoCompleteResultsTime;
 
         public NugetSearchViewModel()
         {
@@ -83,12 +86,46 @@
             }
         }
 
+        public TimeSpan AutoCompleteTime
+        {
+            get { return this.autoCompleteTime; }
+            private set
+            {
+                if (value.Equals(this.autoCompleteTime)) return;
+                this.autoCompleteTime = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public TimeSpan ResultsTime
+        {
+            get { return this.resultsTime; }
+            private set
+            {
+                if (value.Equals(this.resultsTime)) return;
+                this.resultsTime = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public TimeSpan AutoCompleteResultsTime
+        {
+            get { return this.autoCompleteResultsTime; }
+            private set
+            {
+                if (value.Equals(this.autoCompleteResultsTime)) return;
+                this.autoCompleteResultsTime = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         [NotifyPropertyChangedInvocator]
         protected virtual async void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName == nameof(this.SearchText))
             {
+                this.stopwatch.Restart();
                 this.NugetResults.Clear();
                 if (string.IsNullOrEmpty(this.text))
                 {
@@ -106,6 +143,7 @@
                 var query = this.searchText;
                 this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(query, this.AutoCompleteCount)
                     .ConfigureAwait(false);
+                this.AutoCompleteTime = this.stopwatch.Elapsed;
                 if (this.nugetAutoComplete.Any())
                 {
                     var results = await Nuget.GetResultsAsync(string.Join(" ", this.nugetAutoComplete))
@@ -115,6 +153,8 @@
                         this.UpdateResults(results);
                     }
                 }
+
+                this.AutoCompleteResultsTime = this.stopwatch.Elapsed;
             }
             catch (Exception e)
             {
@@ -133,6 +173,8 @@
                 {
                     this.UpdateResults(results);
                 }
+
+                this.ResultsTime = this.stopwatch.Elapsed;
             }
             catch (Exception e)
             {
