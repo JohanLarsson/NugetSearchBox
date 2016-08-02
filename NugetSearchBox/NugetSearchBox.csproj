@@ -78,6 +78,7 @@
     <Compile Include="QueryViewModel.cs">
       <DependentUpon>QueryView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RefreshingCollection.cs" />
     <Page Include="ComboBoxStaticCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

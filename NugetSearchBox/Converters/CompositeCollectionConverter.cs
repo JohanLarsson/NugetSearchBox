@@ -2,9 +2,7 @@
 {
     using System;
     using System.Collections;
-    using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq;
     using System.Windows.Data;
 
     public class CompositeCollectionConverter : IMultiValueConverter
@@ -14,9 +12,17 @@
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var compositeCollection = new CompositeCollection();
-            foreach (var value in values.OfType<IEnumerable>())
+            foreach (var value in values)
             {
-                compositeCollection.Add(new CollectionContainer {Collection = value});
+                var enumerable = value as IEnumerable;
+                if (enumerable != null)
+                {
+                    compositeCollection.Add(new CollectionContainer { Collection = enumerable });
+                }
+                else
+                {
+                    compositeCollection.Add(value);
+                }
             }
 
             return compositeCollection;
@@ -24,7 +30,7 @@
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("CompositeCollectionConverter ony supports oneway bindings");
         }
     }
 }

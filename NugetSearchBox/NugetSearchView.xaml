@@ -77,8 +77,8 @@
                 <ListBox x:Name="MergedListBox" HorizontalContentAlignment="Stretch">
                     <ListBox.ItemsSource>
                         <MultiBinding Converter="{x:Static local:CompositeCollectionConverter.Default}">
-                            <Binding Path="QueryResults" Mode="OneTime"/>
-                            <Binding Path="AutoCompleteResults" Mode="OneTime"/>
+                            <Binding Mode="OneTime" Path="QueryResults" />
+                            <Binding Mode="OneTime" Path="AutoCompleteResults" />
                         </MultiBinding>
                     </ListBox.ItemsSource>
                     <ListBox.ItemTemplate>
@@ -92,6 +92,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </TabItem>
+            
             <TabItem Header="Separate">
                 <ScrollViewer>
                     <StackPanel>

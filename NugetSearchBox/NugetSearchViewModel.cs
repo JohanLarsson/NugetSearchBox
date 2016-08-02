@@ -7,9 +7,11 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Data;
+    using System.Windows.Threading;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
@@ -64,9 +66,9 @@
             }
         }
 
-        public ObservableCollection<PackageInfo> QueryResults { get; } = new ObservableCollection<PackageInfo>();
+        public RefreshingCollection<PackageInfo> QueryResults { get; } = new RefreshingCollection<PackageInfo>();
 
-        public ObservableCollection<PackageInfo> AutoCompleteResults { get; } = new ObservableCollection<PackageInfo>();
+        public RefreshingCollection<PackageInfo> AutoCompleteResults { get; } = new RefreshingCollection<PackageInfo>();
 
         public string SearchText
         {
@@ -130,7 +132,6 @@
             if (propertyName == nameof(this.SearchText))
             {
                 this.stopwatch.Restart();
-                this.QueryResults.Clear();
                 if (string.IsNullOrEmpty(this.text))
                 {
                     this.UpdateAutoComplete();
@@ -145,25 +146,17 @@
             try
             {
                 var query = this.searchText;
-                this.AutoCompleteResults.Clear();
                 this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(query, this.AutoCompleteCount)
-                    .ConfigureAwait(false);
+                    .ConfigureAwait(true);
                 this.AutoCompleteTime = this.stopwatch.Elapsed;
                 if (this.nugetAutoComplete.Any())
                 {
                     var results = await Task.WhenAll(this.nugetAutoComplete.Select(a=> Nuget.GetResultsAsync(a)))
-                                            .ConfigureAwait(false);
+                                            .ConfigureAwait(true);
                     if (this.searchText == query)
                     {
                         var flattened = results.SelectMany(r => r).Distinct();
-                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            var newresults = flattened.Except(this.QueryResults).ToArray();
-                            foreach (var result in newresults)
-                            {
-                                this.AutoCompleteResults.Add(result);
-                            }
-                        }));
+                        this.AutoCompleteResults.RefreshWith(flattened);
                     }
                 }
 
@@ -181,28 +174,18 @@
             {
                 var query = this.searchText;
                 var results = await Nuget.GetResultsAsync(this.SearchText, this.ResultCount)
-                    .ConfigureAwait(false);
-                if (this.searchText == query)
-                {
-                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        var newresults = results.Except(this.QueryResults).ToArray();
-                        foreach (var result in newresults)
-                        {
-                            this.QueryResults.Add(result);
-                        }
-                    }));
-                }
-
+                    .ConfigureAwait(true);
                 this.ResultsTime = this.stopwatch.Elapsed;
-            }
-            catch (Exception e)
-            {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+
+                if (query == this.searchText)
                 {
-                    this.QueryResults.Clear();
-                    //this.QueryResults.Add(e.Message);
-                }));
+                    this.QueryResults.RefreshWith(results);
+                }
+            }
+            catch (Exception)
+            {
+                this.QueryResults.Clear();
+                //this.QueryResults.Add(new PackageInfo());
             }
         }
     }

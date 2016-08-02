@@ -23,7 +23,7 @@
             }
             var takestring = take == null ? "" : $"&take = {take}";
             var query = $@"https://api-v2v3search-0.nuget.org/autocomplete?q={HttpUtility.UrlEncode(text, Encoding.UTF8)}{takestring}";
-            var task = AutoCompletesCache.GetOrAdd(query, q => DownloadAutoCompletesAsync(q));
+            var task = AutoCompletesCache.GetOrAdd(query, DownloadAutoCompletesAsync);
             return await task.ConfigureAwait(false);
         }
 
@@ -35,7 +35,7 @@
 
         public static async Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(string query)
         {
-            var task = QueryCache.GetOrAdd(query, q => DownloadQueryResultsAsync(q));
+            var task = QueryCache.GetOrAdd(query, DownloadQueryResultsAsync);
             return await task.ConfigureAwait(false);
         }
 
