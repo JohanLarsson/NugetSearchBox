@@ -81,47 +81,18 @@
                             <Binding Mode="OneTime" Path="AutoCompleteResults" />
                         </MultiBinding>
                     </ListBox.ItemsSource>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type local:PackageInfo}">
-                            <TextBox BorderBrush="{x:Null}"
-                                     BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Text="{Binding Title,
-                                                    Mode=OneTime}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
                 </ListBox>
             </TabItem>
-            
+
             <TabItem Header="Separate">
                 <ScrollViewer>
                     <StackPanel>
                         <GroupBox Header="Results">
-                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type local:PackageInfo}">
-                                        <TextBox BorderBrush="{x:Null}"
-                                                 BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Text="{Binding Title,
-                                                                Mode=OneTime}" />
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}" />
                         </GroupBox>
 
                         <GroupBox Header="AutoCompleteResults">
-                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding AutoCompleteResults}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type local:PackageInfo}">
-                                        <TextBox BorderBrush="{x:Null}"
-                                                 BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Text="{Binding Title,
-                                                                Mode=OneTime}" />
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding AutoCompleteResults}" />
                         </GroupBox>
                     </StackPanel>
                 </ScrollViewer>

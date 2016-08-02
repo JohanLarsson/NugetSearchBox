@@ -60,6 +60,7 @@
       <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\CompositeCollectionConverter.cs" />
+    <Compile Include="Converters\UrlToImageConverter.cs" />
     <Compile Include="Dtos\AutoCompleteResponse.cs" />
     <Compile Include="Dtos\PackageInfo.cs" />
     <Compile Include="Dtos\QueryResponse.cs" />
@@ -131,6 +132,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\NuGetIcon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

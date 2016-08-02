@@ -12,6 +12,7 @@
             string description, 
             string summary,
             string title, 
+            string iconUrl,
             string licenseUrl,
             string projectUrl,
             string[] tags, 
@@ -26,6 +27,7 @@
             this.Description = description;
             this.Summary = summary;
             this.Title = title;
+            this.IconUrl = iconUrl;
             this.LicenseUrl = licenseUrl;
             this.ProjectUrl = projectUrl;
             this.Tags = tags;
@@ -47,6 +49,8 @@
         public string Summary { get; }
 
         public string Title { get; }
+
+        public string IconUrl { get; }
 
         public string LicenseUrl { get; }
 

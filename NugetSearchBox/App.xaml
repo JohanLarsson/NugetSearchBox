@@ -4,6 +4,52 @@
              xmlns:local="clr-namespace:NugetSearchBox"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <DataTemplate DataType="{x:Type local:PackageInfo}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image Height="24"
+                       Margin="2"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Source="{Binding IconUrl,
+                                        Converter={local:UrlToImageConverter Default=Images/NugetIcon.png},
+                                        Mode=OneTime}" />
+                <Grid Grid.Column="1" VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <!--<TextBlock FontWeight="Bold" Text="{Binding Title}" />-->
+                            <TextBox BorderBrush="{x:Null}"
+                                     BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Text="{Binding Title,
+                                                    Mode=OneTime}" />
+                            <TextBlock Margin="2,0,0,0" Text="{Binding Authors, Mode=OneTime}" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="VersionBlock"
+                                   Grid.Column="1"
+                                   Text="{Binding Version,
+                                                  Mode=OneTime}" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               MaxHeight="{Binding ActualHeight,
+                                                   ElementName=VersionBlock}"
+                               Text="{Binding Description,
+                                              Mode=OneTime}"
+                               TextWrapping="WrapWithOverflow" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
     </Application.Resources>
 </Application>
