@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\ImageCache.cs" />
     <Compile Include="Views\ComboBoxStaticCollectionView.xaml.cs">
       <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
     </Compile>
