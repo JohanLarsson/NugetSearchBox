@@ -3,17 +3,19 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.IO;
     using System.Net;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Web;
     using Newtonsoft.Json;
-    
+
     public static class Nuget
     {
+        private static readonly ThreadLocal<JsonSerializer> Serializer = new ThreadLocal<JsonSerializer>(() => JsonSerializer.Create(new JsonSerializerSettings { Converters = JsonConverters.Default }));
         private static readonly string[] EmptyStrings = new string[0];
-        private static readonly ThreadLocal<StringBuilder> QueryBuilder = new ThreadLocal<StringBuilder>(()=> new StringBuilder());
+        private static readonly ThreadLocal<StringBuilder> QueryBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
         internal static readonly ConcurrentDictionary<string, JsonAndPackageInfo> PackageCache = new ConcurrentDictionary<string, JsonAndPackageInfo>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>> QueryCache = new ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<string>>> AutoCompletesCache = new ConcurrentDictionary<string, Task<IReadOnlyList<string>>>();
@@ -63,7 +65,7 @@
                 builder.Append(skip);
             }
 
-            var query =  builder.ToString();
+            var query = builder.ToString();
             return GetQueryResultsAsync(query);
         }
 
@@ -78,8 +80,17 @@
             using (var client = new WebClient())
             {
                 var address = new Uri(query);
-                var result = await client.DownloadStringTaskAsync(address).ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<AutoCompleteResponse>(result).Data;
+                using (var result = await client.OpenReadTaskAsync(address).ConfigureAwait(false))
+                {
+                    using (var sr = new StreamReader(result))
+                    {
+                        using (var reader = new JsonTextReader(sr))
+                        {
+                            var response = Serializer.Value.Deserialize<AutoCompleteResponse>(reader);
+                            return response.Data;
+                        }
+                    }
+                }
             }
         }
 
@@ -90,9 +101,17 @@
                 var address = string.IsNullOrEmpty(query)
                     ? new Uri($@"https://api-v2v3search-0.nuget.org/query?")
                     : new Uri($@"https://api-v2v3search-0.nuget.org/query?{query}");
-                var result = await client.DownloadStringTaskAsync(address).ConfigureAwait(false);
-                var queryResponse = JsonConvert.DeserializeObject<QueryResponse>(result, JsonConverters.Default);
-                return queryResponse.Data;
+                using (var result = await client.OpenReadTaskAsync(address).ConfigureAwait(false))
+                {
+                    using (var sr = new StreamReader(result))
+                    {
+                        using (var reader = new JsonTextReader(sr))
+                        {
+                            var response = Serializer.Value.Deserialize<QueryResponse>(reader);
+                            return response.Data;
+                        }
+                    }
+                }
             }
         }
 
