@@ -3,9 +3,7 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.IO;
     using System.Net;
-    using System.Security.Policy;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -16,7 +14,7 @@
     {
         private static readonly string[] EmptyStrings = new string[0];
         private static readonly ThreadLocal<StringBuilder> QueryBuilder = new ThreadLocal<StringBuilder>(()=> new StringBuilder());
-        private static readonly ConcurrentDictionary<string, PackageInfo> PackageCache = new ConcurrentDictionary<string, PackageInfo>();
+        internal static readonly ConcurrentDictionary<string, JsonAndPackageInfo> PackageCache = new ConcurrentDictionary<string, JsonAndPackageInfo>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>> QueryCache = new ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<string>>> AutoCompletesCache = new ConcurrentDictionary<string, Task<IReadOnlyList<string>>>();
 
@@ -93,10 +91,20 @@
                     ? new Uri($@"https://api-v2v3search-0.nuget.org/query?")
                     : new Uri($@"https://api-v2v3search-0.nuget.org/query?{query}");
                 var result = await client.DownloadStringTaskAsync(address).ConfigureAwait(false);
-                //var jsonReader = new JsonTextReader(new StringReader(result));
-
-                var queryResponse = JsonConvert.DeserializeObject<QueryResponse>(result);
+                var queryResponse = JsonConvert.DeserializeObject<QueryResponse>(result, JsonConverters.Default);
                 return queryResponse.Data;
+            }
+        }
+
+        internal class JsonAndPackageInfo
+        {
+            internal readonly string Json;
+            internal readonly PackageInfo Package;
+
+            public JsonAndPackageInfo(string json, PackageInfo package)
+            {
+                this.Json = json;
+                this.Package = package;
             }
         }
     }
