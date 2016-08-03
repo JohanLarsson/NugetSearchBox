@@ -37,7 +37,7 @@
                   IsEditable="True"
                   IsTextSearchCaseSensitive="False"
                   IsTextSearchEnabled="False"
-                  ItemsSource="{Binding NugetAutoComplete}"
+                  ItemsSource="{Binding AutoCompletes}"
                   SelectedItem="{Binding Text}"
                   ShouldPreserveUserEnteredPrefix="True"
                   StaysOpenOnEdit="True"
@@ -70,7 +70,7 @@
         <GroupBox Grid.Row="4"
                   Grid.Column="0"
                   Header="Autocomplete">
-            <ItemsControl Foreground="LightBlue" ItemsSource="{Binding NugetAutoComplete}" />
+            <ItemsControl Foreground="LightBlue" ItemsSource="{Binding AutoCompletes}" />
         </GroupBox>
 
         <TabControl Grid.Row="4" Grid.Column="1">

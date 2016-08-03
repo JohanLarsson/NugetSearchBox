@@ -4,6 +4,7 @@ namespace NugetSearchBox
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Threading;
     using NugetSearchBox.Annotations;
@@ -25,30 +26,39 @@ namespace NugetSearchBox
 
         internal void RefreshWith(IEnumerable<T> newItems)
         {
-            var dispatcher = Application.Current.Dispatcher;
-            if (dispatcher == null)
-            {
-                this.RefreshWithCore(newItems);
-            }
-            else
-            {
-                dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => this.RefreshWithCore(newItems)));
-            }
+            this.UnionWith(newItems);
+            this.ExceptWith(newItems);
         }
 
         internal void Clear()
         {
-            this.inner.Clear();
+            BeginInvoke(this.inner.Clear);
         }
 
-        private async void RefreshWithCore(IEnumerable<T> newItems)
+        internal void UnionWith(IEnumerable<T> newItems)
         {
-            this.AddNewItems(newItems);
-            await Dispatcher.Yield();
-            this.RemoveOldItems(newItems);
+            BeginInvoke(()=> this.UnionWithCore(newItems));
         }
 
-        private void AddNewItems(IEnumerable<T> newItems)
+        internal void ExceptWith(IEnumerable<T> newItems)
+        {
+            BeginInvoke(() => this.ExceptWithCore(newItems));
+        }
+
+        private static void BeginInvoke(Action action)
+        {
+            var dispatcher = Application.Current.Dispatcher;
+            if (dispatcher == null)
+            {
+                action();
+            }
+            else
+            {
+                dispatcher.BeginInvoke(DispatcherPriority.Background, action);
+            }
+        }
+
+        private void UnionWithCore(IEnumerable<T> newItems)
         {
             this.set.Clear();
             this.set.UnionWith(newItems);
@@ -59,7 +69,7 @@ namespace NugetSearchBox
             }
         }
 
-        private void RemoveOldItems(IEnumerable<T> newItems)
+        private void ExceptWithCore(IEnumerable<T> newItems)
         {
             this.set.Clear();
             this.set.UnionWith(this.inner);
