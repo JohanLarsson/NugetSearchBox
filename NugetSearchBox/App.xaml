@@ -6,31 +6,27 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <system:Uri x:Key="DefaultIcon">
-            pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon_24x24.png
+            pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon_36x36.png
         </system:Uri>
-        <BitmapCache x:Key="BitmapCache" />
+
+        <local:IllegalIconToDefaultConverter x:Key="IllegalIconToDefaultConverter" DefaultIcon="{StaticResource DefaultIcon}" />
+
         <DataTemplate DataType="{x:Type local:PackageInfo}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Image Width="24"
-                       Height="24"
-                       Margin="2"
-                       CacheMode="{StaticResource BitmapCache}"
-                       RenderOptions.BitmapScalingMode="HighQuality"
-                       RenderOptions.CachingHint="Cache"
+                <Image Width="36"
+                       Height="36"
+                       Margin="2,2,6,6"
                        Source="{Binding IconUrl,
+                                        Converter={StaticResource IllegalIconToDefaultConverter},
                                         TargetNullValue={StaticResource DefaultIcon},
+                                        FallbackValue={StaticResource DefaultIcon},
                                         Mode=OneTime,
-                                        IsAsync=True}"
-                       Stretch="Uniform" />
-                <!--<Image Width="24"
-                       Height="24"
-                       Margin="2"
-                       Source="Images/NuGetIcon_24x24.png" />-->
-                
+                                        IsAsync=True}" />
+
                 <Grid Grid.Column="1" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -54,7 +50,8 @@
                         <TextBlock x:Name="VersionBlock"
                                    Grid.Column="1"
                                    Text="{Binding Version,
-                                                  Mode=OneTime}" />
+                                                  Mode=OneTime,
+                                                  StringFormat='v{0}'}" />
                     </Grid>
 
                     <TextBlock Grid.Row="1"

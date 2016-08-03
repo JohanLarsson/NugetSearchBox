@@ -14,9 +14,6 @@
         private readonly Stopwatch stopwatch = new Stopwatch();
         private string searchText;
         private IEnumerable<string> autoCompletes;
-        private string text;
-        private int? autoCompleteCount;
-        private int? resultCount;
         private TimeSpan autoCompleteTime;
         private TimeSpan resultsTime;
         private TimeSpan autoCompleteResultsTime;
@@ -29,17 +26,6 @@
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int? AutoCompleteCount
-        {
-            get { return this.autoCompleteCount; }
-            set
-            {
-                if (value == this.autoCompleteCount) return;
-                this.autoCompleteCount = value;
-                this.OnPropertyChanged();
-            }
-        }
-
         public IEnumerable<string> AutoCompletes
         {
             get { return this.autoCompletes; }
@@ -51,22 +37,7 @@
             }
         }
 
-        public int? ResultCount
-        {
-            get { return this.resultCount; }
-            set
-            {
-                if (value == this.resultCount) return;
-                this.resultCount = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public RefreshingCollection<PackageInfo> QueryResults { get; } = new RefreshingCollection<PackageInfo>();
-
-        public RefreshingCollection<PackageInfo> AutoCompleteResults { get; } = new RefreshingCollection<PackageInfo>();
-
-        public RefreshingCollection<PackageInfo> AllResults { get; } = new RefreshingCollection<PackageInfo>();
+        public RefreshingCollection<PackageInfo> Packages { get; } = new RefreshingCollection<PackageInfo>();
 
         public string SearchText
         {
@@ -75,17 +46,6 @@
             {
                 if (value == this.searchText) return;
                 this.searchText = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public string Text
-        {
-            get { return this.text; }
-            set
-            {
-                if (value == this.text) return;
-                this.text = value;
                 this.OnPropertyChanged();
             }
         }
@@ -141,57 +101,72 @@
             if (propertyName == nameof(this.SearchText))
             {
                 this.stopwatch.Restart();
-                await Task.WhenAll(
+                var query = this.searchText;
+                var ints = await Task.WhenAll(
                     this.UpdateResults(),
                     this.UpdateAutoComplete())
-                          .ConfigureAwait(false);
+                                     .ConfigureAwait(false);
+
+                if (query == this.searchText && ints[1] < 20)
+                {
+                    await this.AppendAutoCompleteResults(query).ConfigureAwait(false);
+                }
+
                 this.stopwatch.Stop();
             }
         }
 
-        private async Task UpdateAutoComplete()
+        private async Task AppendAutoCompleteResults(string query)
         {
-            this.autoCompletes = Enumerable.Empty<string>();
-            try
+            var names = this.autoCompletes;
+            if (names.Any())
             {
-                var query = this.searchText;
-                this.AutoCompletes = await Nuget.GetAutoCompletesAsync(query, this.AutoCompleteCount)
-                    .ConfigureAwait(false);
-                this.AutoCompleteTime = this.stopwatch.Elapsed;
-                if (this.autoCompletes.Any())
+                foreach (var name in names)
                 {
-                    var newItems = new HashSet<PackageInfo>();
-                    foreach (var name in this.autoCompletes)
+                    var results = await Nuget.GetResultsAsync(name)
+                                             .ConfigureAwait(false);
+                    if (this.searchText != query)
                     {
-                        var results = await Nuget.GetResultsAsync(name)
-                                                 .ConfigureAwait(false);
-                        if (this.searchText != query)
-                        {
-                            break;
-                        }
-
-                        newItems.UnionWith(results);
-                        this.AutoCompleteResults.UnionWith(results);
-                        this.AllResults.UnionWith(results);
+                        break;
                     }
 
-                    this.AutoCompleteResults.ExceptWith(newItems);
-                    this.AllResults.RefreshWith(this.QueryResults.Concat(this.AutoCompleteResults));
-                    this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
+                    this.Packages.UnionWith(results);
                 }
-                else
-                {
-                    this.AutoCompleteResults.Clear();
-                    this.AllResults.RefreshWith(this.QueryResults);
-                }
-            }
-            catch (Exception e)
-            {
-                this.Exception =  e;
+
+                this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
             }
         }
 
-        private async Task UpdateResults(int? take = null)
+        private async Task<int> UpdateAutoComplete()
+        {
+            if (this.autoCompletes?.Contains(this.searchText) == true)
+            {
+                return 0;
+            }
+
+            this.autoCompletes = Enumerable.Empty<string>();
+            if (string.IsNullOrWhiteSpace(this.searchText))
+            {
+                return 0;
+            }
+
+            try
+            {
+                var query = this.searchText;
+                this.AutoCompletes = await Nuget.GetAutoCompletesAsync(query)
+                                                .ConfigureAwait(false);
+                this.AutoCompleteTime = this.stopwatch.Elapsed;
+                return this.autoCompletes?.Count() ?? 0;
+            }
+            catch (Exception e)
+            {
+                this.Exception = e;
+            }
+
+            return 0;
+        }
+
+        private async Task<int> UpdateResults(int? take = null)
         {
             try
             {
@@ -202,19 +177,22 @@
 
                 var startTime = this.stopwatch.Elapsed;
                 var query = this.searchText;
-                var results = await Nuget.GetResultsAsync(this.SearchText, take ?? this.ResultCount)
+                var results = await Nuget.GetResultsAsync(this.SearchText, take)
                                          .ConfigureAwait(false);
                 this.ResultsTime = this.stopwatch.Elapsed - startTime;
 
                 if (query == this.searchText)
                 {
-                    this.QueryResults.RefreshWith(results);
-                    this.AllResults.RefreshWith(this.QueryResults.Concat(this.AutoCompleteResults));
+                    this.Packages.RefreshWith(results);
+                    return results.Count;
                 }
+
+                return int.MaxValue;
             }
             catch (Exception e)
             {
                 this.Exception = e;
+                return 0;
             }
         }
     }
