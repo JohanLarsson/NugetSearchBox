@@ -33,7 +33,7 @@
             return await task.ConfigureAwait(false);
         }
 
-        public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string text, int? take = null)
+        public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string text, int? skip = null, int? take = null)
         {
             var builder = QueryBuilder.Value;
             builder.Clear();
@@ -42,14 +42,27 @@
                 builder.Append("q=");
                 builder.Append(Uri.EscapeDataString(text));
             }
+
             if (take != null)
             {
                 if (builder.Length != 0)
                 {
                     builder.Append('&');
                 }
+
                 builder.Append("take=");
                 builder.Append(take);
+            }
+
+            if (skip != null)
+            {
+                if (builder.Length != 0)
+                {
+                    builder.Append('&');
+                }
+
+                builder.Append("skip=");
+                builder.Append(skip);
             }
 
             var query =  builder.ToString();
