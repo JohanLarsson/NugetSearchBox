@@ -25,8 +25,8 @@
             var sb = Stringbuilder.Value;
             sb.Clear();
             var id = ReadElementTo(reader, sb);
-            Nuget.JsonAndPackageInfo cachedItem;
-            if (Nuget.PackageCache.TryGetValue(id, out cachedItem))
+            NugetCache.JsonAndPackageInfo cachedItem;
+            if (NugetCache.TryGet(id, out cachedItem))
             {
                 if (Equals(cachedItem.Json, sb))
                 {
@@ -36,7 +36,7 @@
 
             var json = sb.ToString();
             var packageInfo = JsonConvert.DeserializeObject<PackageInfo>(json);
-            Nuget.PackageCache[id] = new Nuget.JsonAndPackageInfo(json, packageInfo);
+            NugetCache.UpdatePackageCache(id, new NugetCache.JsonAndPackageInfo(json, packageInfo));
             return packageInfo;
         }
 

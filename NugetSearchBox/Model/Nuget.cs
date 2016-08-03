@@ -16,7 +16,6 @@
         private static readonly ThreadLocal<JsonSerializer> Serializer = new ThreadLocal<JsonSerializer>(() => JsonSerializer.Create(new JsonSerializerSettings { Converters = JsonConverters.Default }));
         private static readonly string[] EmptyStrings = new string[0];
         private static readonly ThreadLocal<StringBuilder> QueryBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
-        internal static readonly ConcurrentDictionary<string, JsonAndPackageInfo> PackageCache = new ConcurrentDictionary<string, JsonAndPackageInfo>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>> QueryCache = new ConcurrentDictionary<string, Task<IReadOnlyList<PackageInfo>>>();
         private static readonly ConcurrentDictionary<string, Task<IReadOnlyList<string>>> AutoCompletesCache = new ConcurrentDictionary<string, Task<IReadOnlyList<string>>>();
 
@@ -99,7 +98,7 @@
             using (var client = new WebClient())
             {
                 var address = string.IsNullOrEmpty(query)
-                    ? new Uri($@"https://api-v2v3search-0.nuget.org/query?")
+                    ? new Uri($@"https://api-v2v3search-0.nuget.org/query")
                     : new Uri($@"https://api-v2v3search-0.nuget.org/query?{query}");
                 using (var result = await client.OpenReadTaskAsync(address).ConfigureAwait(false))
                 {
@@ -112,18 +111,6 @@
                         }
                     }
                 }
-            }
-        }
-
-        internal class JsonAndPackageInfo
-        {
-            internal readonly string Json;
-            internal readonly PackageInfo Package;
-
-            public JsonAndPackageInfo(string json, PackageInfo package)
-            {
-                this.Json = json;
-                this.Package = package;
             }
         }
     }
