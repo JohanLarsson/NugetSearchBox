@@ -21,7 +21,7 @@
 
         public NugetSearchViewModel()
         {
-            this.UpdateResults();
+            this.GetInitialResults();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -116,24 +116,37 @@
             }
         }
 
+        private void GetInitialResults()
+        {
+            this.UpdateResults();
+        }
+
         private async Task AppendAutoCompleteResults(string query)
         {
             var names = this.autoCompletes;
             if (names.Any())
             {
-                foreach (var name in names)
+                try
                 {
-                    var results = await Nuget.GetResultsAsync(name)
-                                             .ConfigureAwait(false);
-                    if (this.searchText != query)
+                    foreach (var name in names)
                     {
-                        break;
+                        var results = await Nuget.GetResultsAsync(name)
+                                                 .ConfigureAwait(false);
+                        if (this.searchText != query)
+                        {
+                            break;
+                        }
+
+                        this.Packages.UnionWith(results);
                     }
 
-                    this.Packages.UnionWith(results);
+                    this.Exception = null;
+                    this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
                 }
-
-                this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
+                catch (Exception e)
+                {
+                    this.Exception = e;
+                }
             }
         }
 
@@ -156,6 +169,7 @@
                 this.AutoCompletes = await Nuget.GetAutoCompletesAsync(query)
                                                 .ConfigureAwait(false);
                 this.AutoCompleteTime = this.stopwatch.Elapsed;
+                this.Exception = null;
                 return this.autoCompletes?.Count() ?? 0;
             }
             catch (Exception e)
@@ -187,6 +201,7 @@
                     return results.Count;
                 }
 
+                this.Exception = null;
                 return int.MaxValue;
             }
             catch (Exception e)

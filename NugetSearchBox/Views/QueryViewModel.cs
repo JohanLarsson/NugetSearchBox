@@ -13,6 +13,7 @@ namespace NugetSearchBox
         private string query;
         private TimeSpan time;
         private Stopwatch stopwatch = Stopwatch.StartNew();
+        private Exception exception;
 
         public QueryViewModel()
         {
@@ -54,6 +55,17 @@ namespace NugetSearchBox
             }
         }
 
+        public Exception Exception
+        {
+            get { return this.exception; }
+            private set
+            {
+                if (Equals(value, this.exception)) return;
+                this.exception = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         [NotifyPropertyChangedInvocator]
         protected virtual async void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -69,14 +81,14 @@ namespace NugetSearchBox
             try
             {
                 this.stopwatch.Restart();
-                this.QueryResults = await Nuget.GetQueryResultsAsync(this.Query).ConfigureAwait(false);
+                var uri = Nuget.CreateQuery(this.query, @"https://api-v2v3search-0.nuget.org/query");
+                this.QueryResults = await Nuget.GetQueryResultsAsync(uri).ConfigureAwait(false);
                 this.Time = this.stopwatch.Elapsed;
             }
             catch (Exception e)
             {
-                //this.QueryResults = new[] { e.Message };
+                this.Exception = e;
             }
         }
-
     }
 }

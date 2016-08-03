@@ -16,68 +16,89 @@
         <local:NugetSearchViewModel />
     </UserControl.DataContext>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="200" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0"
-                   Style="{StaticResource LabelStyle}"
-                   Text="Search" />
-        <ComboBox Grid.Row="0"
-                  Grid.Column="1"
-                  IsEditable="True"
-                  IsTextSearchEnabled="False"
-                  ItemsSource="{Binding AutoCompletes}"
-                  StaysOpenOnEdit="True"
-                  Text="{Binding SearchText,
-                                 UpdateSourceTrigger=PropertyChanged}" />
+        <Expander ExpandDirection="Right" IsExpanded="False">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           Style="{StaticResource LabelStyle}"
+                           Text="Autocomplete: " />
+                <TextBlock Grid.Row="0"
+                           Grid.Column="1"
+                           Text="{Binding AutoCompleteTime}" />
 
-        <TextBlock Grid.Row="1"
-                   Grid.Column="0"
-                   Style="{StaticResource LabelStyle}"
-                   Text="Autocomplete: " />
-        <TextBlock Grid.Row="1"
-                   Grid.Column="1"
-                   Text="{Binding AutoCompleteTime}" />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           Style="{StaticResource LabelStyle}"
+                           Text="Results: " />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="1"
+                           Text="{Binding ResultsTime}" />
 
-        <TextBlock Grid.Row="2"
-                   Grid.Column="0"
-                   Style="{StaticResource LabelStyle}"
-                   Text="Results: " />
-        <TextBlock Grid.Row="2"
-                   Grid.Column="1"
-                   Text="{Binding ResultsTime}" />
+                <TextBlock Grid.Row="2"
+                           Grid.Column="0"
+                           Style="{StaticResource LabelStyle}"
+                           Text="Autocomplete results: " />
+                <TextBlock Grid.Row="2"
+                           Grid.Column="1"
+                           Text="{Binding AutoCompleteResultsTime}" />
 
-        <TextBlock Grid.Row="3"
-                   Grid.Column="0"
-                   Style="{StaticResource LabelStyle}"
-                   Text="Autocomplete results: " />
-        <TextBlock Grid.Row="3"
-                   Grid.Column="1"
-                   Text="{Binding AutoCompleteResultsTime}" />
+                <GroupBox Grid.Row="3"
+                          Grid.Column="0"
+                          Header="Autocomplete">
+                    <ItemsControl Foreground="LightBlue" ItemsSource="{Binding AutoCompletes}" />
+                </GroupBox>
+            </Grid>
+        </Expander>
 
-        <GroupBox Grid.Row="4"
-                  Grid.Column="0"
-                  Header="Autocomplete">
-            <ItemsControl Foreground="LightBlue" ItemsSource="{Binding AutoCompletes}" />
-        </GroupBox>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Style="{StaticResource LabelStyle}"
+                       Text="Search" />
 
-        <GroupBox Grid.Row="4"
-                  Grid.Column="1"
-                  Header="Merged results">
-            <ListBox HorizontalContentAlignment="Stretch"
-                     local:ScrollViewer.LastPage="OnCloseToBottom"
-                     ItemsSource="{Binding Packages}"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-        </GroupBox>
+            <ComboBox Grid.Row="0"
+                      MinWidth="200"
+                      HorizontalAlignment="Left"
+                      Grid.Column="1"
+                      IsEditable="True"
+                      IsTextSearchEnabled="False"
+                      ItemsSource="{Binding AutoCompletes}"
+                      StaysOpenOnEdit="True"
+                      Text="{Binding SearchText,
+                                     UpdateSourceTrigger=PropertyChanged}" />
+
+            <GroupBox Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Header="Merged results">
+                <ListBox HorizontalContentAlignment="Stretch"
+                         local:ScrollViewer.LastPage="OnCloseToBottom"
+                         ItemsSource="{Binding Packages}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+            </GroupBox>
+        </Grid>
     </Grid>
 </UserControl>
