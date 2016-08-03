@@ -107,7 +107,7 @@
                     this.UpdateAutoComplete())
                                      .ConfigureAwait(false);
 
-                if (query == this.searchText && ints[1] < 20)
+                if (query == this.searchText && ints[0] < 20)
                 {
                     await this.AppendAutoCompleteResults(query).ConfigureAwait(false);
                 }
