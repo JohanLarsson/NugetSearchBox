@@ -6,7 +6,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <system:Uri x:Key="DefaultIcon">
-            pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon.png
+            pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon_24x24.png
         </system:Uri>
         <BitmapCache x:Key="BitmapCache" />
         <DataTemplate DataType="{x:Type local:PackageInfo}">
@@ -26,6 +26,11 @@
                                         Mode=OneTime,
                                         IsAsync=True}"
                        Stretch="Uniform" />
+                <!--<Image Width="24"
+                       Height="24"
+                       Margin="2"
+                       Source="Images/NuGetIcon_24x24.png" />-->
+                
                 <Grid Grid.Column="1" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
