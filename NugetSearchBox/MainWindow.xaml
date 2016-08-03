@@ -7,6 +7,7 @@
         Title="MainWindow"
         Width="525"
         Height="350"
+        UseLayoutRounding="True"
         mc:Ignorable="d">
     <TabControl SelectedIndex="2">
         <TabItem Header="nuget">

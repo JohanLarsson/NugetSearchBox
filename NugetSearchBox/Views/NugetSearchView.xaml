@@ -35,13 +35,9 @@
         <ComboBox Grid.Row="0"
                   Grid.Column="1"
                   IsEditable="True"
-                  IsTextSearchCaseSensitive="False"
-                  IsTextSearchEnabled="False"
                   ItemsSource="{Binding AutoCompletes}"
-                  SelectedItem="{Binding Text}"
-                  ShouldPreserveUserEnteredPrefix="True"
                   StaysOpenOnEdit="True"
-                  Text="{Binding SearchText}" />
+                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
