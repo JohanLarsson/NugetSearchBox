@@ -9,6 +9,8 @@
             pack://application:,,,/NugetSearchBox;component/Images/NuGetIcon_36x36.png
         </system:Uri>
 
+        <local:IllegalIconToDefaultConverter x:Key="IllegalIconToDefaultConverter" DefaultIcon="{StaticResource DefaultIcon}" />
+
         <DataTemplate DataType="{x:Type local:PackageInfo}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -19,6 +21,7 @@
                        Height="36"
                        Margin="2,2,6,6"
                        Source="{Binding IconUrl,
+                                        Converter={StaticResource IllegalIconToDefaultConverter},
                                         TargetNullValue={StaticResource DefaultIcon},
                                         FallbackValue={StaticResource DefaultIcon},
                                         Mode=OneTime,

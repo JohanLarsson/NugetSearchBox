@@ -35,9 +35,11 @@
         <ComboBox Grid.Row="0"
                   Grid.Column="1"
                   IsEditable="True"
+                  IsTextSearchEnabled="False"
                   ItemsSource="{Binding AutoCompletes}"
                   StaysOpenOnEdit="True"
-                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                  Text="{Binding SearchText,
+                                 UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
@@ -69,27 +71,13 @@
             <ItemsControl Foreground="LightBlue" ItemsSource="{Binding AutoCompletes}" />
         </GroupBox>
 
-        <TabControl Grid.Row="4" Grid.Column="1">
-            <TabItem Header="Merged results">
-                <ListBox HorizontalContentAlignment="Stretch"
-                         local:ScrollViewer.LastPage="OnCloseToBottom"
-                         ItemsSource="{Binding AllResults}"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-            </TabItem>
-
-            <!--<TabItem Header="Separate">
-                <ScrollViewer>
-                    <StackPanel>
-                        <GroupBox Header="Results">
-                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding QueryResults}" />
-                        </GroupBox>
-
-                        <GroupBox Header="AutoCompleteResults">
-                            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding AutoCompleteResults}" />
-                        </GroupBox>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>-->
-        </TabControl>
+        <GroupBox Grid.Row="4"
+                  Grid.Column="1"
+                  Header="Merged results">
+            <ListBox HorizontalContentAlignment="Stretch"
+                     local:ScrollViewer.LastPage="OnCloseToBottom"
+                     ItemsSource="{Binding Packages}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+        </GroupBox>
     </Grid>
 </UserControl>
