@@ -77,17 +77,11 @@
             <TabItem Header="Merged results">
                 <ListBox HorizontalContentAlignment="Stretch"
                          local:ScrollViewer.LastPage="OnCloseToBottom"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListBox.ItemsSource>
-                        <MultiBinding Converter="{x:Static local:CompositeCollectionConverter.Default}">
-                            <Binding Mode="OneTime" Path="QueryResults" />
-                            <Binding Mode="OneTime" Path="AutoCompleteResults" />
-                        </MultiBinding>
-                    </ListBox.ItemsSource>
-                </ListBox>
+                         ItemsSource="{Binding AllResults}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
             </TabItem>
 
-            <TabItem Header="Separate">
+            <!--<TabItem Header="Separate">
                 <ScrollViewer>
                     <StackPanel>
                         <GroupBox Header="Results">
@@ -99,7 +93,7 @@
                         </GroupBox>
                     </StackPanel>
                 </ScrollViewer>
-            </TabItem>
+            </TabItem>-->
         </TabControl>
     </Grid>
 </UserControl>

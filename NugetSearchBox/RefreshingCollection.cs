@@ -1,7 +1,11 @@
 namespace NugetSearchBox
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Threading;
     using NugetSearchBox.Annotations;
 
     public class RefreshingCollection<T> : ReadOnlyObservableCollection<T>
@@ -9,7 +13,7 @@ namespace NugetSearchBox
         private readonly ObservableCollection<T> inner;
         private readonly HashSet<T> set = new HashSet<T>();
         public RefreshingCollection()
-            : this( new ObservableCollection<T>())
+            : this(new ObservableCollection<T>())
         {
         }
 
@@ -21,13 +25,27 @@ namespace NugetSearchBox
 
         internal void RefreshWith(IEnumerable<T> newItems)
         {
-            this.AddNewItems(newItems);
-            this.RemoveOldItems(newItems);
+            var dispatcher = Application.Current.Dispatcher;
+            if (dispatcher == null)
+            {
+                this.RefreshWithCore(newItems);
+            }
+            else
+            {
+                dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => this.RefreshWithCore(newItems)));
+            }
         }
 
         internal void Clear()
         {
-           this.inner.Clear();
+            this.inner.Clear();
+        }
+
+        private async void RefreshWithCore(IEnumerable<T> newItems)
+        {
+            this.AddNewItems(newItems);
+            await Dispatcher.Yield();
+            this.RemoveOldItems(newItems);
         }
 
         private void AddNewItems(IEnumerable<T> newItems)

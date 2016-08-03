@@ -7,7 +7,6 @@
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using System.Windows.Input;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
@@ -24,7 +23,10 @@
 
         public NugetSearchViewModel()
         {
+            this.stopwatch.Restart();
             this.UpdateResults();
+            this.resultsTime = this.stopwatch.Elapsed;
+            this.stopwatch.Stop();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -65,6 +67,8 @@
         public RefreshingCollection<PackageInfo> QueryResults { get; } = new RefreshingCollection<PackageInfo>();
 
         public RefreshingCollection<PackageInfo> AutoCompleteResults { get; } = new RefreshingCollection<PackageInfo>();
+
+        public RefreshingCollection<PackageInfo> AllResults { get; } = new RefreshingCollection<PackageInfo>();
 
         public string SearchText
         {
@@ -128,12 +132,9 @@
             if (propertyName == nameof(this.SearchText))
             {
                 this.stopwatch.Restart();
-                if (string.IsNullOrEmpty(this.text))
-                {
-                    this.UpdateAutoComplete();
-                }
-
+                this.UpdateAutoComplete();
                 this.UpdateResults();
+                this.stopwatch.Stop();
             }
         }
 
@@ -143,24 +144,29 @@
             {
                 var query = this.searchText;
                 this.NugetAutoComplete = await Nuget.GetAutoCompletesAsync(query, this.AutoCompleteCount)
-                    .ConfigureAwait(true);
+                    .ConfigureAwait(false);
                 this.AutoCompleteTime = this.stopwatch.Elapsed;
                 if (this.nugetAutoComplete.Any())
                 {
-                    var results = await Task.WhenAll(this.nugetAutoComplete.Select(a=> Nuget.GetResultsAsync(a)))
-                                            .ConfigureAwait(true);
+                    var results = await Task.WhenAll(this.nugetAutoComplete.Select(a => Nuget.GetResultsAsync(a)))
+                                            .ConfigureAwait(false);
+                    this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
                     if (this.searchText == query)
                     {
-                        var flattened = results.SelectMany(r => r).Distinct();
-                        this.AutoCompleteResults.RefreshWith(flattened);
+                        var newResults = results.SelectMany(r => r).Distinct().ToArray();
+                        this.AutoCompleteResults.RefreshWith(newResults);
+                        this.AllResults.RefreshWith(this.QueryResults.Concat(this.AutoCompleteResults));
                     }
                 }
-
-                this.AutoCompleteResultsTime = this.stopwatch.Elapsed - this.autoCompleteTime;
+                else
+                {
+                    this.AutoCompleteResults.Clear();
+                    this.AllResults.RefreshWith(this.QueryResults);
+                }
             }
             catch (Exception e)
             {
-                this.NugetAutoComplete = new[] {e.Message};
+                this.NugetAutoComplete = new[] { e.Message };
             }
         }
 
@@ -170,17 +176,18 @@
             {
                 var query = this.searchText;
                 var results = await Nuget.GetResultsAsync(this.SearchText, this.ResultCount)
-                    .ConfigureAwait(true);
+                                         .ConfigureAwait(false);
                 this.ResultsTime = this.stopwatch.Elapsed;
 
                 if (query == this.searchText)
                 {
                     this.QueryResults.RefreshWith(results);
+                    this.AllResults.RefreshWith(this.QueryResults.Concat(this.AutoCompleteResults));
                 }
             }
             catch (Exception)
             {
-                this.QueryResults.Clear();
+                //this.QueryResults.Clear();
                 //this.QueryResults.Add(new PackageInfo());
             }
         }
