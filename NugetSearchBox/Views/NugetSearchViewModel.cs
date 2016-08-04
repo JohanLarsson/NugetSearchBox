@@ -26,27 +26,6 @@
             this.Initialize();
         }
 
-        // initialize needed here due to async
-        private async void Initialize()
-        {
-            try
-            {
-                if (System.IO.File.Exists(CacheFile))
-                {
-                    var json = await File.ReadAllTextAsync(CacheFile).ConfigureAwait(false);
-                    var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
-                    this.Packages.RefreshWith(packageInfos);
-                }
-            }
-            catch (Exception e)
-            {
-                this.Exception = e;
-            }
-
-            Nuget.ReceivedRespose += this.OnReceivedResponse;
-            this.UpdateResults();
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public IEnumerable<string> AutoCompletes
@@ -164,6 +143,28 @@
                 }
 
                 this.stopwatch.Stop();
+            }
+        }
+
+        // initialize needed here due to async
+        private async void Initialize()
+        {
+            try
+            {
+                if (System.IO.File.Exists(CacheFile))
+                {
+                    var json = await File.ReadAllTextAsync(CacheFile).ConfigureAwait(false);
+                    var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
+                    this.Packages.RefreshWith(packageInfos);
+                }
+
+                Nuget.ReceivedRespose += this.OnReceivedResponse;
+                await this.UpdateResults().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.Exception = e;
+                Nuget.ReceivedRespose -= this.OnReceivedResponse;
             }
         }
 
