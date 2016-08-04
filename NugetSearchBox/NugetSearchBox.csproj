@@ -73,6 +73,7 @@
     <Compile Include="Converters\PackageToFavoriteViewModelConverter.cs" />
     <Compile Include="FavoritViewModel.cs" />
     <Compile Include="Model\File.cs" />
+    <Compile Include="Model\ReceivedResposeEventArgs.cs" />
     <Compile Include="Views\ComboBoxStaticCollectionView.xaml.cs">
       <DependentUpon>ComboBoxStaticCollectionView.xaml</DependentUpon>
     </Compile>

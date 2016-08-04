@@ -24,8 +24,8 @@
         private static readonly ThreadLocal<StringBuilder> QueryBuilder =
             new ThreadLocal<StringBuilder>(() => new StringBuilder());
 
-        private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>> QueryCache =
-            new ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>>();
+        private static readonly ConcurrentDictionary<QueryInfo, Task<IReadOnlyList<PackageInfo>>> QueryCache =
+            new ConcurrentDictionary<QueryInfo, Task<IReadOnlyList<PackageInfo>>>();
 
         private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>> AutoCompletesCache =
             new ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>>();
@@ -34,7 +34,7 @@
 
         private static QueryInfo? LastQuery;
 
-        internal static event EventHandler<string> ReceivedRespose;
+        internal static event EventHandler<ReceivedResposeEventArgs> ReceivedRespose;
 
         public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string searchText, int? take = null)
         {
@@ -51,8 +51,9 @@
         public static Task<IReadOnlyList<PackageInfo>> GetPackageInfosAsync(string searchText, int? take = null)
         {
             take = take ?? 20;
-            var query = CreateQuery(searchText, QueryUrl, null, take);
-            LastQuery = new QueryInfo(searchText, query, 0, take.Value);
+            var uri = CreateQuery(searchText, QueryUrl, null, take);
+            var query = new QueryInfo(searchText, uri, 0, take.Value);
+            LastQuery = query;
             return GetQueryResultsAsync(query);
         }
 
@@ -65,10 +66,10 @@
             }
 
             LastQuery = moreResultsQuery;
-            return QueryCache.GetOrAdd(moreResultsQuery.Value.Query, DownloadQueryResultsAsync);
+            return QueryCache.GetOrAdd(moreResultsQuery.Value, DownloadQueryResultsAsync);
         }
 
-        internal static Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(Uri query)
+        internal static Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(QueryInfo query)
         {
             return QueryCache.GetOrAdd(query, DownloadQueryResultsAsync);
         }
@@ -130,15 +131,15 @@
             }
         }
 
-        private static async Task<IReadOnlyList<PackageInfo>> DownloadQueryResultsAsync(Uri query)
+        private static async Task<IReadOnlyList<PackageInfo>> DownloadQueryResultsAsync(QueryInfo query)
         {
             using (var client = new WebClient())
             {
                 var handler = ReceivedRespose;
                 if (handler != null)
                 {
-                    var json = await client.DownloadStringTaskAsync(query).ConfigureAwait(false);
-                    handler.Invoke(null, json);
+                    var json = await client.DownloadStringTaskAsync(query.Uri).ConfigureAwait(false);
+                    handler.Invoke(null, new ReceivedResposeEventArgs(query.SearchText, json));
                     using (var sr = new StringReader(json))
                     {
                         using (var reader = new JsonTextReader(sr))
@@ -150,7 +151,7 @@
                 }
                 else
                 {
-                    using (var result = await client.OpenReadTaskAsync(query).ConfigureAwait(false))
+                    using (var result = await client.OpenReadTaskAsync(query.Uri).ConfigureAwait(false))
                     {
                         using (var sr = new StreamReader(result))
                         {
@@ -165,30 +166,56 @@
             }
         }
 
-        private struct QueryInfo
+        internal struct QueryInfo : IEquatable<QueryInfo>
         {
-            internal readonly Uri Query;
-            private readonly string searchText;
+            internal readonly Uri Uri;
+            internal readonly string SearchText;
             private readonly int skip;
             private readonly int take;
 
-            public QueryInfo(string searchText, Uri query, int skip, int take)
+            public QueryInfo(string searchText, Uri uri, int skip, int take)
             {
-                this.searchText = searchText;
-                this.Query = query;
+                this.SearchText = searchText;
+                this.Uri = uri;
                 this.skip = skip;
                 this.take = take;
             }
 
+            public static bool operator ==(QueryInfo left, QueryInfo right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(QueryInfo left, QueryInfo right)
+            {
+                return !left.Equals(right);
+            }
+
+            public bool Equals(QueryInfo other)
+            {
+                return this.Uri.Equals(other.Uri);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                return obj is QueryInfo && this.Equals((QueryInfo) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return this.Uri.GetHashCode();
+            }
+
             internal QueryInfo? CreateMoreResultsQuery(string searchText)
             {
-                if (this.searchText != searchText)
+                if (this.SearchText != searchText)
                 {
                     return null;
                 }
 
                 Task<IReadOnlyList<PackageInfo>> results;
-                if (!QueryCache.TryGetValue(this.Query, out results))
+                if (!QueryCache.TryGetValue(this, out results))
                 {
                     return null;
                 }

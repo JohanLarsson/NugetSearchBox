@@ -82,7 +82,8 @@ namespace NugetSearchBox
             {
                 this.stopwatch.Restart();
                 var uri = Nuget.CreateQuery(this.query, @"https://api-v2v3search-0.nuget.org/query");
-                this.QueryResults = await Nuget.GetQueryResultsAsync(uri).ConfigureAwait(false);
+                var queryInfo = new Nuget.QueryInfo(this.query, uri, 0, 0);
+                this.QueryResults = await Nuget.GetQueryResultsAsync(queryInfo).ConfigureAwait(false);
                 this.Time = this.stopwatch.Elapsed;
             }
             catch (Exception e)

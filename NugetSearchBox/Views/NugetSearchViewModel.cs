@@ -21,6 +21,7 @@
         private TimeSpan autoCompleteResultsTime;
         private Exception exception;
         private static readonly string CacheFile = System.IO.Path.Combine(Paket.Constants.NuGetCacheFolder, "defaultSearch.paket");
+        private bool hasUpdatedDefaultSearch;
 
         public NugetSearchViewModel()
         {
@@ -180,15 +181,19 @@
                 var startTime = this.stopwatch.Elapsed;
                 this.ResultsTime = this.stopwatch.Elapsed - startTime;
 
-                var updatedFavorites = await Task.WhenAll(favorites.Select(x => Nuget.GetPackageInfosAsync($"id:{x.Id}"))).ConfigureAwait(false);
-                Nuget.ReceivedRespose += this.OnReceivedResponse;
-                var results = await Nuget.GetPackageInfosAsync(this.SearchText)
-                                         .ConfigureAwait(false);
-                if (string.IsNullOrEmpty(this.searchText))
+                if (!this.hasUpdatedDefaultSearch)
                 {
-                    this.Packages.UnionWith(updatedFavorites.SelectMany(x => x).Concat(results));
+                    Nuget.ReceivedRespose += this.OnReceivedResponse;
                 }
 
+                var tasks = favorites.Select(x => Nuget.GetPackageInfosAsync($"id:{x.Id}"))
+                                                .ToList();
+                tasks.Add(Nuget.GetPackageInfosAsync(this.SearchText));
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(this.searchText))
+                {
+                    this.Packages.UnionWith(tasks.SelectMany(x => x.Result));
+                }
             }
             catch (Exception e)
             {
@@ -197,13 +202,18 @@
             }
         }
 
-        private async void OnReceivedResponse(object sender, string json)
+        private async void OnReceivedResponse(object sender, ReceivedResposeEventArgs args)
         {
+            if (!string.IsNullOrWhiteSpace(args.Searchtext))
+            {
+                return;
+            }
+
+            this.hasUpdatedDefaultSearch = true;
             Nuget.ReceivedRespose -= this.OnReceivedResponse;
             try
             {
-                await File.WriteAllTextAsync(CacheFile, json).ConfigureAwait(false);
-
+                await File.WriteAllTextAsync(CacheFile, args.Json).ConfigureAwait(false);
             }
             catch (Exception e)
             {
