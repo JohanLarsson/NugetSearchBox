@@ -138,6 +138,7 @@
                 if (handler != null)
                 {
                     var json = await client.DownloadStringTaskAsync(query).ConfigureAwait(false);
+                    handler.Invoke(null, json);
                     using (var sr = new StringReader(json))
                     {
                         using (var reader = new JsonTextReader(sr))

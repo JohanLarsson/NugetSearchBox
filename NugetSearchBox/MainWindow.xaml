@@ -8,6 +8,8 @@
         Width="525"
         Height="350"
         RenderOptions.ClearTypeHint="Auto"
+        TextOptions.TextRenderingMode="Aliased"
+        TextOptions.TextFormattingMode="Ideal"
         SnapsToDevicePixels="True"
         UseLayoutRounding="True"
         mc:Ignorable="d">
