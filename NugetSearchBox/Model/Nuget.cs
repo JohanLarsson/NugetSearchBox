@@ -48,7 +48,7 @@
             return await task.ConfigureAwait(false);
         }
 
-        public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string searchText, int? take = null)
+        public static Task<IReadOnlyList<PackageInfo>> GetPackageInfosAsync(string searchText, int? take = null)
         {
             take = take ?? 20;
             var query = CreateQuery(searchText, QueryUrl, null, take);

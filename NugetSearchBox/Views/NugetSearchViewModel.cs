@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
@@ -23,7 +24,9 @@
 
         public NugetSearchViewModel()
         {
-            this.Initialize();
+#pragma warning disable 4014 ctor intentional fire & forget
+            this.UpdateWithEmptySearch();
+#pragma warning restore 4014
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -147,19 +150,44 @@
         }
 
         // initialize needed here due to async
-        private async void Initialize()
+        private async Task UpdateWithEmptySearch()
         {
             try
             {
+                var favorites = new List<PackageInfo>();
+                foreach (var favorite in FavoritViewModel.FavoritesFolder.EnumerateFiles("*.favorite", SearchOption.TopDirectoryOnly))
+                {
+                    var json = await File.ReadAllTextAsync(favorite.FullName).ConfigureAwait(false);
+                    var packageInfo = JsonConvert.DeserializeObject<PackageInfo>(json);
+                    favorites.Add(packageInfo);
+                }
+
+                this.Packages.UnionWith(favorites);
+
                 if (System.IO.File.Exists(CacheFile))
                 {
                     var json = await File.ReadAllTextAsync(CacheFile).ConfigureAwait(false);
                     var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
-                    this.Packages.RefreshWith(packageInfos);
+                    this.Packages.UnionWith(packageInfos);
                 }
 
+                if (!this.stopwatch.IsRunning)
+                {
+                    this.stopwatch.Restart();
+                }
+
+                var startTime = this.stopwatch.Elapsed;
+                this.ResultsTime = this.stopwatch.Elapsed - startTime;
+
+                var updatedFavorites = await Task.WhenAll(favorites.Select(x => Nuget.GetPackageInfosAsync($"id:{x.Id}"))).ConfigureAwait(false);
                 Nuget.ReceivedRespose += this.OnReceivedResponse;
-                await this.UpdateResults().ConfigureAwait(false);
+                var results = await Nuget.GetPackageInfosAsync(this.SearchText)
+                                         .ConfigureAwait(false);
+                if (string.IsNullOrEmpty(this.searchText))
+                {
+                    this.Packages.UnionWith(updatedFavorites.SelectMany(x => x).Concat(results));
+                }
+
             }
             catch (Exception e)
             {
@@ -189,7 +217,7 @@
             {
                 try
                 {
-                    var tasks = names.Select(name => Nuget.GetResultsAsync(name));
+                    var tasks = names.Select(name => Nuget.GetPackageInfosAsync(name));
                     foreach (var task in tasks)
                     {
                         var results = await task.ConfigureAwait(false);
@@ -245,6 +273,11 @@
 
         private async Task<int> UpdateResults(int? take = null)
         {
+            if (string.IsNullOrEmpty(this.searchText))
+            {
+                await this.UpdateWithEmptySearch().ConfigureAwait(false);
+                return this.Packages.Count;
+            }
             try
             {
                 if (!this.stopwatch.IsRunning)
@@ -254,7 +287,7 @@
 
                 var startTime = this.stopwatch.Elapsed;
                 var query = this.searchText;
-                var results = await Nuget.GetResultsAsync(this.SearchText, take)
+                var results = await Nuget.GetPackageInfosAsync(this.SearchText, take)
                                          .ConfigureAwait(false);
                 this.ResultsTime = this.stopwatch.Elapsed - startTime;
 
