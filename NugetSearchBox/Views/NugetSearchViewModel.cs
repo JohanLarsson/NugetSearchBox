@@ -4,14 +4,13 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
     using NugetSearchBox.Annotations;
 
-    public class NugetSearchViewModel : INotifyPropertyChanged
+    public sealed class NugetSearchViewModel : INotifyPropertyChanged
     {
         private readonly Stopwatch stopwatch = new Stopwatch();
         private string searchText;
@@ -24,11 +23,24 @@
 
         public NugetSearchViewModel()
         {
-            if (File.Exists(CacheFile))
+            this.Initialize();
+        }
+
+        // initialize needed here due to async
+        private async void Initialize()
+        {
+            try
             {
-                var json = File.ReadAllText(CacheFile);
-                var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
-                this.Packages.RefreshWith(packageInfos);
+                if (System.IO.File.Exists(CacheFile))
+                {
+                    var json = await File.ReadAllTextAsync(CacheFile).ConfigureAwait(false);
+                    var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
+                    this.Packages.RefreshWith(packageInfos);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Exception = e;
             }
 
             Nuget.ReceivedRespose += this.OnReceivedResponse;
@@ -134,7 +146,7 @@
         }
 
         [NotifyPropertyChangedInvocator]
-        protected virtual async void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private async void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName == nameof(this.SearchText))
@@ -155,10 +167,18 @@
             }
         }
 
-        private void OnReceivedResponse(object sender, string json)
+        private async void OnReceivedResponse(object sender, string json)
         {
             Nuget.ReceivedRespose -= this.OnReceivedResponse;
-            File.WriteAllText(CacheFile, json);
+            try
+            {
+                await File.WriteAllTextAsync(CacheFile, json).ConfigureAwait(false);
+
+            }
+            catch (Exception e)
+            {
+                this.Exception = e;
+            }
         }
 
         private async Task AppendAutoCompleteResults(string query)
