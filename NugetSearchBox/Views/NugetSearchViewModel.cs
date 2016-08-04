@@ -195,6 +195,8 @@
                         var results = await task.ConfigureAwait(false);
                         if (this.searchText != query)
                         {
+                            // awaiting here so we can log exception if any.
+                            await Task.WhenAll(tasks).ConfigureAwait(false);
                             break;
                         }
 
