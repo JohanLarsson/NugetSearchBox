@@ -20,7 +20,7 @@
         private TimeSpan resultsTime;
         private TimeSpan autoCompleteResultsTime;
         private Exception exception;
-        private static readonly string CacheFile =System.IO.Path.Combine(Paket.Constants.NuGetCacheFolder, "defaultSearch.paket");
+        private static readonly string CacheFile = System.IO.Path.Combine(Paket.Constants.NuGetCacheFolder, "defaultSearch.paket");
 
         public NugetSearchViewModel()
         {
@@ -168,10 +168,10 @@
             {
                 try
                 {
-                    foreach (var name in names)
+                    var tasks = names.Select(name => Nuget.GetResultsAsync(name));
+                    foreach (var task in tasks)
                     {
-                        var results = await Nuget.GetResultsAsync(name)
-                                                 .ConfigureAwait(false);
+                        var results = await task.ConfigureAwait(false);
                         if (this.searchText != query)
                         {
                             break;
