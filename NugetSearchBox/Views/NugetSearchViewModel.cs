@@ -154,6 +154,7 @@
         {
             try
             {
+                this.Packages.Clear();
                 var favorites = new List<PackageInfo>();
                 foreach (var favorite in FavoritViewModel.FavoritesFolder.EnumerateFiles("*.favorite", SearchOption.TopDirectoryOnly))
                 {
