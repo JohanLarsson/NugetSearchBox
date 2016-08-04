@@ -6,6 +6,7 @@
     using System.IO;
     using System.Net;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Web;
@@ -13,44 +14,84 @@
 
     public static class Nuget
     {
-        private static readonly ThreadLocal<JsonSerializer> Serializer = new ThreadLocal<JsonSerializer>(() => JsonSerializer.Create(new JsonSerializerSettings { Converters = JsonConverters.Default }));
-        private static readonly string[] EmptyStrings = new string[0];
-        private static readonly ThreadLocal<StringBuilder> QueryBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
-        private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>> QueryCache = new ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>>();
-        private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>> AutoCompletesCache = new ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>>();
+        private static readonly Task<IReadOnlyList<PackageInfo>> EmptyResultTask =
+            Task.FromResult((IReadOnlyList<PackageInfo>)new PackageInfo[0]);
 
-        public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string text, int? take = null)
+        private static readonly string[] EmptyStrings = new string[0];
+
+        private static readonly ThreadLocal<JsonSerializer> Serializer =
+            new ThreadLocal<JsonSerializer>(
+                () => JsonSerializer.Create(new JsonSerializerSettings { Converters = JsonConverters.Default }));
+
+        private static readonly ThreadLocal<StringBuilder> QueryBuilder =
+            new ThreadLocal<StringBuilder>(() => new StringBuilder());
+
+        private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>> QueryCache =
+            new ConcurrentDictionary<Uri, Task<IReadOnlyList<PackageInfo>>>();
+
+        private static readonly ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>> AutoCompletesCache =
+            new ConcurrentDictionary<Uri, Task<IReadOnlyList<string>>>();
+
+        private static readonly string QueryUrl = @"https://api-v2v3search-0.nuget.org/query";
+
+        private static QueryInfo? LastQuery;
+
+        public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string searchText, int? take = null)
         {
-            if (string.IsNullOrWhiteSpace(text))
+            if (string.IsNullOrWhiteSpace(searchText))
             {
                 return EmptyStrings;
             }
 
-            var query = CreateQuery(text, @"https://api-v2v3search-0.nuget.org/autocomplete", null, take);
+            var query = CreateQuery(searchText, @"https://api-v2v3search-0.nuget.org/autocomplete", null, take);
             var task = AutoCompletesCache.GetOrAdd(query, DownloadAutoCompletesAsync);
             return await task.ConfigureAwait(false);
         }
 
-        public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string text, int? skip = null, int? take = null)
+        public static Task<IReadOnlyList<PackageInfo>> GetResultsAsync(string searchText, int? take = null)
         {
-            var query = CreateQuery(text, @"https://api-v2v3search-0.nuget.org/query", skip, take);
+            take = take ?? 20;
+            var query = CreateQuery(searchText, QueryUrl, null, take);
+            LastQuery = new QueryInfo(searchText, query, 0, take.Value);
             return GetQueryResultsAsync(query);
         }
 
-        internal static async Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(Uri query)
+        public static Task<IReadOnlyList<PackageInfo>> GetMoreResultsAsync(string searchText)
         {
-            var task = QueryCache.GetOrAdd(query, DownloadQueryResultsAsync);
-            return await task.ConfigureAwait(false);
+            var moreResultsQuery = LastQuery?.CreateMoreResultsQuery(searchText);
+            if (moreResultsQuery == null)
+            {
+                return EmptyResultTask;
+            }
+
+            LastQuery = moreResultsQuery;
+            return QueryCache.GetOrAdd(moreResultsQuery.Value.Query, DownloadQueryResultsAsync);
         }
 
-        internal static Uri CreateQuery(string text, string baseUrl, int? skip = null, int? take = null)
+        internal static Task<IReadOnlyList<PackageInfo>> GetQueryResultsAsync(Uri query)
+        {
+            return QueryCache.GetOrAdd(query, DownloadQueryResultsAsync);
+        }
+
+        internal static Uri CreateQuery(string searchText, string baseUrl, int? skip = null, int? take = null)
         {
             var builder = QueryBuilder.Value;
             builder.Clear();
-            if (!string.IsNullOrWhiteSpace(text))
+            if (!string.IsNullOrWhiteSpace(searchText))
             {
                 builder.Append("q=");
-                builder.Append(Uri.EscapeDataString(text));
+                builder.Append(Uri.EscapeDataString(searchText));
+            }
+
+            if (skip != null && skip > 0)
+            {
+                if (builder.Length != 0)
+                {
+                    builder.Append('&');
+                }
+
+                builder.Append("skip=");
+                builder.Append(skip);
             }
 
             if (take != null)
@@ -62,17 +103,6 @@
 
                 builder.Append("take=");
                 builder.Append(take);
-            }
-
-            if (skip != null)
-            {
-                if (builder.Length != 0)
-                {
-                    builder.Append('&');
-                }
-
-                builder.Append("skip=");
-                builder.Append(skip);
             }
 
             var query = builder.ToString();
@@ -115,6 +145,49 @@
                         }
                     }
                 }
+            }
+        }
+
+        private struct QueryInfo
+        {
+            internal readonly Uri Query;
+            private readonly string searchText;
+            private readonly int skip;
+            private readonly int take;
+
+            public QueryInfo(string searchText, Uri query, int skip, int take)
+            {
+                this.searchText = searchText;
+                this.Query = query;
+                this.skip = skip;
+                this.take = take;
+            }
+
+            internal QueryInfo? CreateMoreResultsQuery(string searchText)
+            {
+                if (this.searchText != searchText)
+                {
+                    return null;
+                }
+
+                Task<IReadOnlyList<PackageInfo>> results;
+                if (!QueryCache.TryGetValue(this.Query, out results))
+                {
+                    return null;
+                }
+
+                if (!results.IsCompleted)
+                {
+                    return null;
+                }
+
+                if (results.Result.Count < this.take)
+                {
+                    return null;
+                }
+
+                var skip = this.skip + this.take;
+                return new QueryInfo(searchText, CreateQuery(searchText, QueryUrl, skip, 20), skip, 20);
             }
         }
     }

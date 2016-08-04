@@ -94,6 +94,34 @@
             }
         }
 
+        internal async Task FetchMoreResults()
+        {
+            try
+            {
+                if (!this.stopwatch.IsRunning)
+                {
+                    this.stopwatch.Restart();
+                }
+
+                var startTime = this.stopwatch.Elapsed;
+                var query = this.searchText;
+                var results = await Nuget.GetMoreResultsAsync(this.SearchText)
+                                         .ConfigureAwait(false);
+                this.ResultsTime = this.stopwatch.Elapsed - startTime;
+
+                if (query == this.searchText)
+                {
+                    this.Packages.UnionWith(results);
+                }
+
+                this.Exception = null;
+            }
+            catch (Exception e)
+            {
+                this.Exception = e;
+            }
+        }
+
         [NotifyPropertyChangedInvocator]
         protected virtual async void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

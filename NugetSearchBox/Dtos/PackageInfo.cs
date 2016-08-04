@@ -1,7 +1,9 @@
 ﻿namespace NugetSearchBox
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
 
+    [DebuggerDisplay("{Id}")]
     public class PackageInfo
     {
         public PackageInfo(

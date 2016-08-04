@@ -13,6 +13,7 @@ namespace NugetSearchBox
 
         private void OnCloseToBottom(object sender, RoutedEventArgs e)
         {
+            (this.DataContext as NugetSearchViewModel)?.FetchMoreResults();
         }
     }
 }
