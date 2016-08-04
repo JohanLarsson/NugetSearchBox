@@ -21,26 +21,24 @@
                     <ToggleButton.Template>
                         <ControlTemplate TargetType="{x:Type ToggleButton}">
                             <Border Background="Transparent">
-                                <StackPanel Orientation="Horizontal">
+                                <Grid Margin="2,2,6,6">
                                     <Image Width="36"
                                            Height="36"
-                                           Margin="2,2"
                                            Source="{Binding IconUrl,
                                                             Converter={StaticResource IllegalIconToDefaultConverter},
                                                             TargetNullValue={StaticResource DefaultIcon},
                                                             FallbackValue={StaticResource DefaultIcon},
                                                             Mode=OneTime,
                                                             IsAsync=True}" />
+
                                     <Path x:Name="StarPath"
                                           Height="12"
-                                          Margin="2,2,6,0"
+                                          HorizontalAlignment="Right"
                                           VerticalAlignment="Top"
                                           Data="M90,100 L75,62 108,38 67,38 54,0 40,38 0,38 35,62 23,100 54,79 z"
                                           Fill="DarkGray"
                                           Stretch="Uniform" />
-
-
-                                </StackPanel>
+                                </Grid>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
@@ -62,7 +60,8 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal">
-                            <TextBox BorderBrush="{x:Null}"
+                            <TextBox Margin="-2,0"
+                                     BorderBrush="{x:Null}"
                                      BorderThickness="0"
                                      IsReadOnly="True"
                                      Text="{Binding Title,
