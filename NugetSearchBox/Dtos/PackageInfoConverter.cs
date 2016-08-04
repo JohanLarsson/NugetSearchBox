@@ -8,6 +8,12 @@
 
     public class PackageInfoConverter : JsonConverter
     {
+        public static readonly PackageInfoConverter Default = new PackageInfoConverter();
+
+        private PackageInfoConverter()
+        {
+        }
+
         private static readonly ThreadLocal<StringBuilder> Stringbuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -75,12 +81,12 @@
                                 break;
                             case JsonToken.Integer:
                             case JsonToken.String:
-                                jsonTextWriter.WriteValue(reader.Value);
-                                break;
                             case JsonToken.Date:
-                            case JsonToken.Raw:
                             case JsonToken.Float:
                             case JsonToken.Boolean:
+                                jsonTextWriter.WriteValue(reader.Value);
+                                break;
+                            case JsonToken.Raw:
                             case JsonToken.Null:
                             case JsonToken.Comment:
                             case JsonToken.StartConstructor:

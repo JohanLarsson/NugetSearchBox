@@ -4,9 +4,11 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using NugetSearchBox.Annotations;
 
     public class NugetSearchViewModel : INotifyPropertyChanged
@@ -18,10 +20,19 @@
         private TimeSpan resultsTime;
         private TimeSpan autoCompleteResultsTime;
         private Exception exception;
+        private static readonly string CacheFile =System.IO.Path.Combine(Paket.Constants.NuGetCacheFolder, "defaultSearch.paket");
 
         public NugetSearchViewModel()
         {
-            this.GetInitialResults();
+            if (File.Exists(CacheFile))
+            {
+                var json = File.ReadAllText(CacheFile);
+                var packageInfos = JsonConvert.DeserializeObject<QueryResponse>(json, JsonConverters.Default).Data;
+                this.Packages.RefreshWith(packageInfos);
+            }
+
+            Nuget.ReceivedRespose += this.OnReceivedResponse;
+            this.UpdateResults();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -144,9 +155,10 @@
             }
         }
 
-        private void GetInitialResults()
+        private void OnReceivedResponse(object sender, string json)
         {
-            this.UpdateResults();
+            Nuget.ReceivedRespose -= this.OnReceivedResponse;
+            File.WriteAllText(CacheFile, json);
         }
 
         private async Task AppendAutoCompleteResults(string query)

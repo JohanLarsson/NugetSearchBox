@@ -16,7 +16,6 @@ namespace NugetSearchBox
             PackageCache.AddOrUpdate(id, jsonAndPackageInfo, (_, __) => jsonAndPackageInfo);
         }
 
-
         internal class JsonAndPackageInfo
         {
             internal readonly string Json;

@@ -4,6 +4,9 @@
 
     internal static class JsonConverters
     {
-        public static readonly JsonConverter[] Default = {new PackageInfoConverter()};
+        public static readonly JsonConverter[] Default =
+        {
+            PackageInfoConverter.Default,
+        };
     }
 }

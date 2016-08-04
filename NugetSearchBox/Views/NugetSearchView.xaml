@@ -80,9 +80,9 @@
                        Text="Search" />
 
             <ComboBox Grid.Row="0"
+                      Grid.Column="1"
                       MinWidth="200"
                       HorizontalAlignment="Left"
-                      Grid.Column="1"
                       IsEditable="True"
                       IsTextSearchEnabled="False"
                       ItemsSource="{Binding AutoCompletes}"

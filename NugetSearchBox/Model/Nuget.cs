@@ -6,10 +6,8 @@
     using System.IO;
     using System.Net;
     using System.Text;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Web;
     using Newtonsoft.Json;
 
     public static class Nuget
@@ -35,6 +33,8 @@
         private static readonly string QueryUrl = @"https://api-v2v3search-0.nuget.org/query";
 
         private static QueryInfo? LastQuery;
+
+        internal static event EventHandler<string> ReceivedRespose;
 
         public static async Task<IReadOnlyList<string>> GetAutoCompletesAsync(string searchText, int? take = null)
         {
@@ -134,14 +134,30 @@
         {
             using (var client = new WebClient())
             {
-                using (var result = await client.OpenReadTaskAsync(query).ConfigureAwait(false))
+                var handler = ReceivedRespose;
+                if (handler != null)
                 {
-                    using (var sr = new StreamReader(result))
+                    var json = await client.DownloadStringTaskAsync(query).ConfigureAwait(false);
+                    using (var sr = new StringReader(json))
                     {
                         using (var reader = new JsonTextReader(sr))
                         {
                             var response = Serializer.Value.Deserialize<QueryResponse>(reader);
                             return response.Data;
+                        }
+                    }
+                }
+                else
+                {
+                    using (var result = await client.OpenReadTaskAsync(query).ConfigureAwait(false))
+                    {
+                        using (var sr = new StreamReader(result))
+                        {
+                            using (var reader = new JsonTextReader(sr))
+                            {
+                                var response = Serializer.Value.Deserialize<QueryResponse>(reader);
+                                return response.Data;
+                            }
                         }
                     }
                 }
