@@ -11,9 +11,11 @@ namespace NugetSearchBox
             this.InitializeComponent();
         }
 
-        private void OnCloseToBottom(object sender, RoutedEventArgs e)
+        public NugetSearchViewModel SearchViewModel => this.DataContext as NugetSearchViewModel;
+
+        private async void OnCloseToBottom(object sender, RoutedEventArgs e)
         {
-            (this.DataContext as NugetSearchViewModel)?.FetchMoreResults();
+            this.SearchViewModel?.FetchMorePackagesAsync();
         }
     }
 }

@@ -57,7 +57,7 @@
             return GetQueryResultsAsync(query);
         }
 
-        public static Task<IReadOnlyList<PackageInfo>> GetMoreResultsAsync(string searchText)
+        public static Task<IReadOnlyList<PackageInfo>> GetMorePackagesAsync(string searchText)
         {
             var moreResultsQuery = LastQuery?.CreateMoreResultsQuery(searchText);
             if (moreResultsQuery == null)

@@ -100,7 +100,7 @@
             }
         }
 
-        internal async Task FetchMoreResults()
+        internal async Task FetchMorePackagesAsync()
         {
             try
             {
@@ -111,7 +111,7 @@
 
                 var startTime = this.stopwatch.Elapsed;
                 var query = this.searchText;
-                var results = await Nuget.GetMoreResultsAsync(this.SearchText)
+                var results = await Nuget.GetMorePackagesAsync(this.SearchText)
                                          .ConfigureAwait(false);
                 this.ResultsTime = this.stopwatch.Elapsed - startTime;
 

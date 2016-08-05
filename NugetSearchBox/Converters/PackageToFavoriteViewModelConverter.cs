@@ -3,6 +3,7 @@
     using System;
     using System.Globalization;
     using System.Windows.Data;
+
     public class PackageToFavoriteViewModelConverter : IValueConverter
     {
         public static  readonly PackageToFavoriteViewModelConverter Default = new PackageToFavoriteViewModelConverter();
